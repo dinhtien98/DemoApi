@@ -1,5 +1,6 @@
 using DemoApi.Context;
 using DemoApi.Services.Student;
+using DemoApi.Services.User;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<DapperConnection>();
 builder.Services.AddScoped<IStudentService,StudentService>();
+builder.Services.AddScoped<IUserService,UserService>();
 
 var app = builder.Build();
 

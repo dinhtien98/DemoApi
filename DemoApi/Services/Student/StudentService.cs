@@ -21,7 +21,7 @@ namespace DemoApi.Services.Student
             VALUES (@Name, @Age, @Email, @Address);
             SELECT LAST_INSERT_ID();";
             var parameters = new DynamicParameters();
-            parameters.Add("Name",studentDto.Name,DbType.String);
+            parameters.Add("Name",studentDto.FullName,DbType.String);
             parameters.Add("Age",studentDto.Age,DbType.Int64);
             parameters.Add("Email",studentDto.Email,DbType.String);
             parameters.Add("Address",studentDto.Address,DbType.String);
@@ -35,7 +35,7 @@ namespace DemoApi.Services.Student
                     var addStudent = new Students
                     {
                         Id = id,
-                        Name = studentDto.Name,
+                        FullName = studentDto.FullName,
                         Age = studentDto.Age,
                         Email = studentDto.Email,
                         Address = studentDto.Address,
@@ -117,7 +117,7 @@ namespace DemoApi.Services.Student
             UPDATE student SET Name = @Name, Age=@Age,Email=@Email,Address=@Address WHERE Id=@id;";
             var parameters = new DynamicParameters();
             parameters.Add("Id",id,DbType.Int32);
-            parameters.Add("Name",studentDto.Name,DbType.String);
+            parameters.Add("Name",studentDto.FullName,DbType.String);
             parameters.Add("Age",studentDto.Age,DbType.Int64);
             parameters.Add("Email",studentDto.Email,DbType.String);
             parameters.Add("Address",studentDto.Address,DbType.String);
