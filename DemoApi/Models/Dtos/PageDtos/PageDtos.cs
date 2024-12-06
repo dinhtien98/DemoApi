@@ -1,40 +1,36 @@
-﻿using DemoApi.Commons;
-using DemoApi.Models.Domain.Role;
-
-namespace DemoApi.Models.Domain.Users
+﻿namespace DemoApi.Models.Dtos.PageDtos
 {
-    public class Users : Common
+    public class PageDtos
     {
-        public int Id
+        public string Code
         {
             get; set;
         }
-        public string UserName
+        public string Name
         {
             get; set;
         }
-        public string Password
+        public string ParentCode
         {
             get; set;
         }
-        public int FirstLogin
+        public int Level
         {
             get; set;
         }
-        public string InDate
+        public string Url
         {
             get; set;
         }
-        public string OutDate
+        public int Hidden
         {
             get; set;
         }
-        public int? FailCount
+        public string Icon
         {
             get; set;
         }
-        public int IsLocked { get; set; } = 0;
-        public DateTime? LastLogin
+        public int Sort
         {
             get; set;
         }
@@ -60,10 +56,6 @@ namespace DemoApi.Models.Domain.Users
         }
         public int DeletedFlag { get; set; } = 0;
         public DateTime? DeletedTime
-        {
-            get; set;
-        }
-        public List<Roles> ListRoleCode
         {
             get; set;
         }

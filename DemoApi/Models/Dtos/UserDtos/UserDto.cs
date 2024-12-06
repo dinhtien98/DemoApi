@@ -1,4 +1,5 @@
 ﻿using DemoApi.Commons;
+using DemoApi.Models.Domain.Role;
 
 namespace DemoApi.Models.Dtos.UserDtos
 {
@@ -12,7 +13,7 @@ namespace DemoApi.Models.Dtos.UserDtos
         {
             get; set;
         }
-        public int? FirstLogin
+        public int FirstLogin
         {
             get; set;
         }
@@ -55,6 +56,10 @@ namespace DemoApi.Models.Dtos.UserDtos
         }
         public int DeletedFlag { get; set; } = 0;
         public DateTime? DeletedTime
+        {
+            get; set;
+        }
+        public List<Roles> ListRoleCode
         {
             get; set;
         }

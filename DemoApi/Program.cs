@@ -1,4 +1,6 @@
 using DemoApi.Context;
+using DemoApi.Services.Page;
+using DemoApi.Services.Role;
 using DemoApi.Services.Student;
 using DemoApi.Services.User;
 
@@ -13,6 +15,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<DapperConnection>();
 builder.Services.AddScoped<IStudentService,StudentService>();
 builder.Services.AddScoped<IUserService,UserService>();
+builder.Services.AddScoped<IPageService,PageService>();
+builder.Services.AddScoped<IRoleService,RoleService>();
 
 var app = builder.Build();
 
