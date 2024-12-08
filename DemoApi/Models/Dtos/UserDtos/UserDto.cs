@@ -59,7 +59,7 @@ namespace DemoApi.Models.Dtos.UserDtos
         {
             get; set;
         }
-        public List<Roles> ListRoleCode
+        public string RoleCode
         {
             get; set;
         }

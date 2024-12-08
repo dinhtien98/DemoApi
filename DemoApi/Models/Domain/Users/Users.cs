@@ -63,7 +63,7 @@ namespace DemoApi.Models.Domain.Users
         {
             get; set;
         }
-        public List<Roles> ListRoleCode
+        public string RoleCode
         {
             get; set;
         }

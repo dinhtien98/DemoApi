@@ -21,70 +21,46 @@ namespace DemoApi.Services.User
         }
         public async Task<bool> AddUserAsync(UserDto userDto)
         {
+            var addUserProcedure = "AddUser";
+
             using (var connection = _dapperConnection.GetConnection())
             {
                 await connection.OpenAsync();
 
-                using (var transaction = connection.BeginTransaction())
+                try
                 {
-                    try
+                    var plainPassword = userDto.Password;
+                    var hashedPassword = BCrypt.Net.BCrypt.HashPassword(plainPassword);
+
+                    var addUserParameters = new DynamicParameters(new
                     {
-                        // Stored procedure user
-                        var procedureName1 = "AddUser";
-                        var plainPassword = userDto.Password;
-                        var hashedPassword = BCrypt.Net.BCrypt.HashPassword(plainPassword);
-                        var parameters1 = new DynamicParameters();
-                        parameters1.Add("p_UserName",userDto.UserName);
-                        parameters1.Add("p_PassWord",hashedPassword);
-                        parameters1.Add("p_FullName",userDto.FullName);
-                        parameters1.Add("p_Email",userDto.Email);
-                        parameters1.Add("p_FirstLogin",userDto.FirstLogin);
-                        parameters1.Add("p_InDate",userDto.InDate);
-                        parameters1.Add("p_OutDate",userDto.OutDate);
-                        parameters1.Add("p_Avatar",userDto.Avatar);
-                        parameters1.Add("p_CreatedBy",userDto.CreatedBy);
-                        var roleCodesJson = JsonConvert.SerializeObject(userDto.ListRoleCode);
-                        parameters1.Add("p_RoleCode",roleCodesJson,dbType: DbType.String,direction: ParameterDirection.Input);
+                        p_UserName = userDto.UserName,
+                        p_PassWord = hashedPassword,
+                        p_FullName = userDto.FullName,
+                        p_Email = userDto.Email,
+                        p_FirstLogin = userDto.FirstLogin,
+                        p_InDate = userDto.InDate,
+                        p_OutDate = userDto.OutDate,
+                        p_Avatar = userDto.Avatar,
+                        p_CreatedBy = userDto.CreatedBy,
+                        p_RoleCode = userDto.RoleCode,
+                    });
 
-                        var userId = await connection.QuerySingleAsync<int>(
-                            procedureName1,
-                            parameters1,
-                            transaction,
-                            commandType: CommandType.StoredProcedure
-                        );
+                    await connection.ExecuteAsync(
+                        addUserProcedure,
+                        addUserParameters,
+                        commandType: CommandType.StoredProcedure
+                    );
 
-                        // Stored procedure user_role
-                        var procedureName2 = "AddUserRole";
-
-                        foreach (var roleCode in userDto.ListRoleCode)
-                        {
-                            var parameters2 = new DynamicParameters();
-                            parameters2.Add("p_UserId",userId);
-                            parameters2.Add("p_RoleCode",roleCode);  
-                            parameters2.Add("p_CreatedBy",userDto.CreatedBy);
-
-                            await connection.ExecuteAsync(
-                                procedureName2,
-                                parameters2,
-                                transaction,
-                                commandType: CommandType.StoredProcedure
-                            );
-                        }
-
-                        
-                        transaction.Commit();
-                        return true;
-                    }
-                    catch (Exception ex)
-                    {
-                        transaction.Rollback();
-                        Console.WriteLine($"Transaction failed: {ex.Message}");
-                        return false;
-                    }
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to execute AddUser stored procedure: {ex.Message}");
+                    return false;
                 }
             }
         }
-
 
 
         public async Task<Users?> DeleteUserAsync(int id,UserDto userDto)
