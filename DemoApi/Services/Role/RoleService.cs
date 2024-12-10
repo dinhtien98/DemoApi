@@ -18,7 +18,7 @@ namespace DemoApi.Services.Role
 
         public async Task<Roles> AddRoleAsync(RoleDtos roleDtos)
         {
-            var procedureName = "AddRole";
+            var procedureName = "sp_auth_role_insert";
             var parameters = new DynamicParameters();
             parameters.Add("p_Code",roleDtos.Code);
             parameters.Add("p_Name",roleDtos.Name);
@@ -47,7 +47,7 @@ namespace DemoApi.Services.Role
 
         public async Task<Roles> DeleteRoleAsync(int id,RoleDtos roleDtos)
         {
-            var procedureName = "DeleteRole";
+            var procedureName = "sp_auth_role_delete";
             var parameters = new DynamicParameters();
             parameters.Add("p_ID",id);
             parameters.Add("p_DeletedBy",roleDtos.DeletedBy);
@@ -75,7 +75,7 @@ namespace DemoApi.Services.Role
 
         public async Task<List<Roles>> GetAllRolesAsync()
         {
-            var procedureName = "GetAllRoles";
+            var procedureName = "sp_auth_role_selectAll";
             try
             {
                 using (var connection = _dapperConnection.GetConnection())
@@ -93,7 +93,7 @@ namespace DemoApi.Services.Role
 
         public async Task<Roles> GetRoleByIdAsync(int id)
         {
-            var procedureName = "GetRole";
+            var procedureName = "sp_auth_role_selectByID";
             var parameters = new DynamicParameters();
             parameters.Add("p_ID",id,DbType.Int32,ParameterDirection.Input);
             try
@@ -113,7 +113,7 @@ namespace DemoApi.Services.Role
 
         public async Task<Roles> UpdateRoleAsync(int id,RoleDtos roleDtos)
         {
-            var procedureName = "UpdateRole";
+            var procedureName = "sp_auth_role_update";
             var parameters = new DynamicParameters();
             parameters.Add("p_ID",id);
             parameters.Add("p_Code",roleDtos.Code);

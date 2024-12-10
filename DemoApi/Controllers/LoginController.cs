@@ -24,10 +24,10 @@ namespace DemoApi.Controllers
         {
             try
             {
-                var token = await _loginService.LoginAsync(loginDto.Username,loginDto.Password);
+                var Data = await _loginService.LoginAsync(loginDto.Username,loginDto.Password);
                 return Ok(new
                 {
-                    token
+                    Data
                 });
             }
             catch (UnauthorizedAccessException)

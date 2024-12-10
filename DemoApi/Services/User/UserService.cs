@@ -21,7 +21,7 @@ namespace DemoApi.Services.User
         }
         public async Task<bool> AddUserAsync(UserDto userDto)
         {
-            var addUserProcedure = "AddUser";
+            var addUserProcedure = "sp_auth_user_insert";
 
             using (var connection = _dapperConnection.GetConnection())
             {
@@ -65,7 +65,7 @@ namespace DemoApi.Services.User
 
         public async Task<Users?> DeleteUserAsync(int id,UserDto userDto)
         {
-            var procedureName = "DeleteUser";
+            var procedureName = "sp_auth_user_delete";
             var parameters = new DynamicParameters();
             parameters.Add("p_ID",id);
             parameters.Add("p_DeletedBy",userDto.DeletedBy);
@@ -93,7 +93,7 @@ namespace DemoApi.Services.User
 
         public async Task<List<Users>> GetAllUserAsync()
         {
-            var procedureName = "GetAllUsers";
+            var procedureName = "sp_auth_user_selectAll";
             try
             {
                 using (var connection = _dapperConnection.GetConnection())
@@ -111,7 +111,7 @@ namespace DemoApi.Services.User
 
         public async Task<Users> GetUserByIdAsync(int id)
         {
-            var procedureName = "GetUserById";
+            var procedureName = "sp_auth_user_selectByID";
             var parameters = new DynamicParameters();
             parameters.Add("p_ID",id,DbType.Int32,ParameterDirection.Input);
             try
@@ -129,42 +129,44 @@ namespace DemoApi.Services.User
             }
         }
 
-        public async Task<Users?> UpdateUserAsync(int id,UserDto userDto)
+        public async Task<bool> UpdateUserAsync(int id,UserDto userDto)
         {
-            var procedureName = "UpdateUser";
-            var parameters = new DynamicParameters();
-            parameters.Add("p_ID",id);
-            parameters.Add("p_UserName",userDto.UserName);
-            parameters.Add("p_PassWord",userDto.Password);
-            parameters.Add("p_FullName",userDto.FullName);
-            parameters.Add("p_Email",userDto.Email);
-            parameters.Add("p_FirstLogin",userDto.FirstLogin);
-            parameters.Add("p_InDate",userDto.InDate);
-            parameters.Add("p_OutDate",userDto.OutDate);
-            parameters.Add("p_Avatar",userDto.Avatar);
-            parameters.Add("p_CreatedBy",userDto.CreatedBy);
-            parameters.Add("p_FailCount",userDto.FailCount);
-            parameters.Add("p_IsLocked",userDto.IsLocked);
-            parameters.Add("p_UpdatedBy",userDto.UpdatedBy);
-
-            try
+            using (var connection = _dapperConnection.GetConnection())
             {
-                using (var connection = _dapperConnection.GetConnection())
+                await connection.OpenAsync();
+                var procedureName = "sp_auth_user_update";
+                try
                 {
-                    await connection.OpenAsync();
+                    var plainPassword = userDto.Password;
+                    var hashedPassword = BCrypt.Net.BCrypt.HashPassword(plainPassword);
 
-                    var result = await connection.QueryFirstOrDefaultAsync<Users>(
+                    var addUserParameters = new DynamicParameters(new
+                    {
+                        p_id=id,
+                        p_PassWord = hashedPassword,
+                        p_FullName = userDto.FullName,
+                        p_Email = userDto.Email,
+                        p_FirstLogin = userDto.FirstLogin,
+                        p_InDate = userDto.InDate,
+                        p_OutDate = userDto.OutDate,
+                        p_Avatar = userDto.Avatar,
+                        p_UpdatedBy = userDto.UpdatedBy,
+                        p_RoleCode = userDto.RoleCode,
+                    });
+
+                    await connection.ExecuteAsync(
                         procedureName,
-                        parameters,
+                        addUserParameters,
                         commandType: CommandType.StoredProcedure
                     );
 
-                    return result;
+                    return true;
                 }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error occurred while adding user: {ex.Message}",ex);
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to execute AddUser stored procedure: {ex.Message}");
+                    return false;
+                }
             }
         }
     }
