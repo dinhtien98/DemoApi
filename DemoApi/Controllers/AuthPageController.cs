@@ -2,17 +2,21 @@
 using DemoApi.Models.Dtos.PageDtos;
 using DemoApi.Models.Dtos.UserDtos;
 using DemoApi.Services.Page;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace DemoApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PageController: ControllerBase
+    [CustomAuthorize]
+
+    public class authPageController: ControllerBase
     {
         private readonly IPageService _pageService;
-        public PageController(IPageService pageService)
+        public authPageController(IPageService pageService)
         {
             _pageService = pageService;
         }
@@ -54,7 +58,16 @@ namespace DemoApi.Controllers
         {
             try
             {
-                var addPage = await _pageService.AddPageAsync(pageDtos);
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim,out int createdById))
+                {
+                    return Unauthorized(new
+                    {
+                        message = "Invalid or missing user ID in token."
+                    });
+                }
+                var addPage = await _pageService.AddPageAsync(pageDtos,createdById);
                 return Ok("Add successfully");
             }
             catch (Exception ex)
@@ -71,10 +84,19 @@ namespace DemoApi.Controllers
         {
             try
             {
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim,out int deletedById))
+                {
+                    return Unauthorized(new
+                    {
+                        message = "Invalid or missing user ID in token."
+                    });
+                }
                 var page = await _pageService.GetPageByIdAsync(id);
                 if (page == null)
                     return NotFound();
-                await _pageService.DeletePageAsync(id,pageDto);
+                await _pageService.DeletePageAsync(id,pageDto,deletedById);
                 return Ok("delete successfully");
             }
             catch (Exception ex)
@@ -91,10 +113,19 @@ namespace DemoApi.Controllers
         {
             try
             {
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim,out int updatedById))
+                {
+                    return Unauthorized(new
+                    {
+                        message = "Invalid or missing user ID in token."
+                    });
+                }
                 var page = await _pageService.GetPageByIdAsync(id);
                 if (page == null)
                     return NotFound();
-                await _pageService.UpdatePageAsync(id,pageDto);
+                await _pageService.UpdatePageAsync(id,pageDto,updatedById);
                 return Ok("update successfully");
             }
             catch (Exception ex)

@@ -16,7 +16,7 @@ namespace DemoApi.Services.Page
         {
             _dapperConnection = dapperConnection;
         }
-        public async Task<bool> AddPageAsync(PageDtos pageDtos)
+        public async Task<bool> AddPageAsync(PageDtos pageDtos, int createdById)
         {
             using (var connection = _dapperConnection.GetConnection())
             {
@@ -36,7 +36,7 @@ namespace DemoApi.Services.Page
                         p_Hidden = pageDtos.Hidden,
                         p_Icon = pageDtos.Icon,
                         p_Sort = pageDtos.Sort,
-                        p_CreatedBy = pageDtos.CreatedBy,
+                        p_CreatedBy = createdById,
                         p_RoleCode = roleCodeJson,
                         p_ActionCode = actionCodeJson,
                     });
@@ -57,12 +57,12 @@ namespace DemoApi.Services.Page
             }
         }
 
-        public async Task<Pages> DeletePageAsync(int id,PageDtos pageDtos)
+        public async Task<Pages> DeletePageAsync(int id,PageDtos pageDtos, int deletedById)
         {
             var procedureName = "sp_auth_page_delete";
             var parameters = new DynamicParameters();
             parameters.Add("p_ID",id);
-            parameters.Add("p_DeletedBy",pageDtos.DeletedBy);
+            parameters.Add("p_DeletedBy",deletedById);
 
             try
             {
@@ -123,7 +123,7 @@ namespace DemoApi.Services.Page
             }
         }
 
-        public async Task<bool> UpdatePageAsync(int id,PageDtos pageDtos)
+        public async Task<bool> UpdatePageAsync(int id,PageDtos pageDtos, int updatedById)
         {
             
             using (var connection = _dapperConnection.GetConnection())
@@ -145,7 +145,7 @@ namespace DemoApi.Services.Page
                         p_Hidden = pageDtos.Hidden,
                         p_Icon = pageDtos.Icon,
                         p_Sort = pageDtos.Sort,
-                        p_UPDATEDBY = pageDtos.UpdatedBy,
+                        p_UPDATEDBY = updatedById,
                         p_RoleCode = roleCodeJson,
                         p_ActionCode = actionCodeJson,
                     });

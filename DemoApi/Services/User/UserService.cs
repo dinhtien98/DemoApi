@@ -19,7 +19,7 @@ namespace DemoApi.Services.User
         {
             _dapperConnection = dapperConnection;
         }
-        public async Task<bool> AddUserAsync(UserDto userDto)
+        public async Task<bool> AddUserAsync(UserDto userDto, int createdById)
         {
             var addUserProcedure = "sp_auth_user_insert";
 
@@ -42,7 +42,7 @@ namespace DemoApi.Services.User
                         p_InDate = userDto.InDate,
                         p_OutDate = userDto.OutDate,
                         p_Avatar = userDto.Avatar,
-                        p_CreatedBy = userDto.CreatedBy,
+                        p_CreatedBy = createdById,
                         p_RoleCode = userDto.RoleCode,
                     });
 
@@ -63,12 +63,12 @@ namespace DemoApi.Services.User
         }
 
 
-        public async Task<Users?> DeleteUserAsync(int id,UserDto userDto)
+        public async Task<Users?> DeleteUserAsync(int id,UserDto userDto, int deletedById)
         {
             var procedureName = "sp_auth_user_delete";
             var parameters = new DynamicParameters();
             parameters.Add("p_ID",id);
-            parameters.Add("p_DeletedBy",userDto.DeletedBy);
+            parameters.Add("p_DeletedBy",deletedById);
 
             try
             {
@@ -129,7 +129,7 @@ namespace DemoApi.Services.User
             }
         }
 
-        public async Task<bool> UpdateUserAsync(int id,UserDto userDto)
+        public async Task<bool> UpdateUserAsync(int id,UserDto userDto, int updatedById)
         {
             using (var connection = _dapperConnection.GetConnection())
             {
@@ -150,7 +150,7 @@ namespace DemoApi.Services.User
                         p_InDate = userDto.InDate,
                         p_OutDate = userDto.OutDate,
                         p_Avatar = userDto.Avatar,
-                        p_UpdatedBy = userDto.UpdatedBy,
+                        p_UpdatedBy = updatedById,
                         p_RoleCode = userDto.RoleCode,
                     });
 

@@ -16,13 +16,13 @@ namespace DemoApi.Services.Role
             _dapperConnection = dapperConnection;
         }
 
-        public async Task<Roles> AddRoleAsync(RoleDtos roleDtos)
+        public async Task<Roles> AddRoleAsync(RoleDtos roleDtos,int createdById)
         {
             var procedureName = "sp_auth_role_insert";
             var parameters = new DynamicParameters();
             parameters.Add("p_Code",roleDtos.Code);
             parameters.Add("p_Name",roleDtos.Name);
-            parameters.Add("p_CreatedBy",roleDtos.CreatedBy);
+            parameters.Add("p_CreatedBy",createdById);
 
             try
             {
@@ -45,12 +45,12 @@ namespace DemoApi.Services.Role
             }
         }
 
-        public async Task<Roles> DeleteRoleAsync(int id,RoleDtos roleDtos)
+        public async Task<Roles> DeleteRoleAsync(int id,RoleDtos roleDtos,int deletedById)
         {
             var procedureName = "sp_auth_role_delete";
             var parameters = new DynamicParameters();
             parameters.Add("p_ID",id);
-            parameters.Add("p_DeletedBy",roleDtos.DeletedBy);
+            parameters.Add("p_DeletedBy",deletedById);
 
             try
             {
@@ -111,14 +111,14 @@ namespace DemoApi.Services.Role
             }
         }
 
-        public async Task<Roles> UpdateRoleAsync(int id,RoleDtos roleDtos)
+        public async Task<Roles> UpdateRoleAsync(int id,RoleDtos roleDtos,int updatedById)
         {
             var procedureName = "sp_auth_role_update";
             var parameters = new DynamicParameters();
             parameters.Add("p_ID",id);
             parameters.Add("p_Code",roleDtos.Code);
             parameters.Add("p_Name",roleDtos.Name);
-            parameters.Add("p_UpdatedBy",roleDtos.UpdatedBy);
+            parameters.Add("p_UpdatedBy",updatedById);
 
             try
             {

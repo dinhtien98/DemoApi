@@ -81,7 +81,9 @@ namespace DemoApi.Services.Login
                     // Setup claims
                     var claims = new List<Claim>
                     {
-                        new Claim(ClaimTypes.Name, userLogonUserDetails.UserName.ToString())
+                        new Claim(ClaimTypes.NameIdentifier, userLogonUserDetails.Id.ToString()),
+                        new Claim(ClaimTypes.Name, userLogonUserDetails.UserName.ToString()),
+                        new Claim("FullName",userLogonUserDetails.FullName.ToString())
                     };
 
                     var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSetings["securityKey"]));

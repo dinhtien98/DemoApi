@@ -7,11 +7,12 @@ namespace DemoApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class StudentController: ControllerBase
+    [CustomAuthorize]
+    public class authStudentController: ControllerBase
     {
         private readonly IStudentService _studentService;
 
-        public StudentController(IStudentService studentService)
+        public authStudentController(IStudentService studentService)
         {
             _studentService = studentService;
         }

@@ -11,10 +11,10 @@ namespace DemoApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class LoginController: ControllerBase
+    public class authLoginController: ControllerBase
     {
         private readonly ILoginService _loginService;
-        public LoginController(ILoginService loginService)
+        public authLoginController(ILoginService loginService)
         {
             _loginService= loginService;
         }

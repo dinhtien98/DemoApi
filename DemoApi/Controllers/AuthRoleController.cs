@@ -4,15 +4,17 @@ using DemoApi.Services.Page;
 using DemoApi.Services.Role;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace DemoApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RoleController: ControllerBase
+    [CustomAuthorize]
+    public class authRoleController: ControllerBase
     {
         private readonly IRoleService _roleService;
-        public RoleController(IRoleService roleService)
+        public authRoleController(IRoleService roleService)
         {
             _roleService = roleService;
         }
@@ -54,7 +56,16 @@ namespace DemoApi.Controllers
         {
             try
             {
-                var addRole = await _roleService.AddRoleAsync(roleDto);
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim,out int createdById))
+                {
+                    return Unauthorized(new
+                    {
+                        message = "Invalid or missing user ID in token."
+                    });
+                }
+                var addRole = await _roleService.AddRoleAsync(roleDto,createdById);
                 return Ok("Add successfully");
             }
             catch (Exception ex)
@@ -71,10 +82,19 @@ namespace DemoApi.Controllers
         {
             try
             {
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim,out int deletedById))
+                {
+                    return Unauthorized(new
+                    {
+                        message = "Invalid or missing user ID in token."
+                    });
+                }
                 var role = await _roleService.GetRoleByIdAsync(id);
                 if (role == null)
                     return NotFound();
-                await _roleService.DeleteRoleAsync(id,roleDtos);
+                await _roleService.DeleteRoleAsync(id,roleDtos,deletedById);
                 return Ok("delete successfully");
             }
             catch (Exception ex)
@@ -91,10 +111,19 @@ namespace DemoApi.Controllers
         {
             try
             {
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim,out int updatedById))
+                {
+                    return Unauthorized(new
+                    {
+                        message = "Invalid or missing user ID in token."
+                    });
+                }
                 var role = await _roleService.GetRoleByIdAsync(id);
                 if (role == null)
                     return NotFound();
-                await _roleService.UpdateRoleAsync(id,roleDtos);
+                await _roleService.UpdateRoleAsync(id,roleDtos,updatedById);
                 return Ok("update successfully");
             }
             catch (Exception ex)
