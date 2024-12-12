@@ -1,5 +1,6 @@
 using DemoApi.Context;
 using DemoApi.Models.Domain.Users;
+using DemoApi.Services.AuthService;
 using DemoApi.Services.Login;
 using DemoApi.Services.Page;
 using DemoApi.Services.Role;
@@ -24,6 +25,7 @@ builder.Services.AddScoped<IUserService,UserService>();
 builder.Services.AddScoped<IPageService,PageService>();
 builder.Services.AddScoped<IRoleService,RoleService>();
 builder.Services.AddScoped<ILoginService,LoginService>();
+builder.Services.AddScoped<IPermissonUserService,PermissonUserService>();
 
 builder.Configuration.AddJsonFile("appsettings.json",optional: false,reloadOnChange: true);
 
