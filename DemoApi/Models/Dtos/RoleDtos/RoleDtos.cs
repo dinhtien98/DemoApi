@@ -1,4 +1,6 @@
-﻿namespace DemoApi.Models.Dtos.RoleDtos
+﻿using DemoApi.Models.Dtos.PageDtos;
+
+namespace DemoApi.Models.Dtos.RoleDtos
 {
     public class RoleDtos
     {
@@ -32,6 +34,14 @@
         }
         public int DeletedFlag { get; set; } = 0;
         public DateTime? DeletedTime
+        {
+            get; set;
+        }
+        public List<Json> PageCode
+        {
+            get; set;
+        }
+        public List<Json> ActionCode
         {
             get; set;
         }

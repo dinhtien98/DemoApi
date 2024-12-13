@@ -4,7 +4,10 @@ using DemoApi.Models.Domain.Pages;
 using DemoApi.Models.Domain.Role;
 using DemoApi.Models.Dtos.PageDtos;
 using DemoApi.Models.Dtos.RoleDtos;
+using Newtonsoft.Json;
 using System.Data;
+using System.Reflection.Emit;
+using System.Xml.Linq;
 
 namespace DemoApi.Services.Role
 {
@@ -19,10 +22,16 @@ namespace DemoApi.Services.Role
         public async Task<Roles> AddRoleAsync(RoleDtos roleDtos,int createdById)
         {
             var procedureName = "sp_auth_role_insert";
-            var parameters = new DynamicParameters();
-            parameters.Add("p_Code",roleDtos.Code);
-            parameters.Add("p_Name",roleDtos.Name);
-            parameters.Add("p_CreatedBy",createdById);
+            string pageCodeJson = JsonConvert.SerializeObject(roleDtos.PageCode);
+            string actionCodeJson = JsonConvert.SerializeObject(roleDtos.ActionCode);
+            var parameters = new DynamicParameters(new
+            {
+                p_Code = roleDtos.Code,
+                p_Name = roleDtos.Name,
+                p_CreatedBy = createdById,
+                p_PageCode = pageCodeJson,
+                p_ActionCode = actionCodeJson,
+            });
 
             try
             {
@@ -114,11 +123,17 @@ namespace DemoApi.Services.Role
         public async Task<Roles> UpdateRoleAsync(int id,RoleDtos roleDtos,int updatedById)
         {
             var procedureName = "sp_auth_role_update";
-            var parameters = new DynamicParameters();
-            parameters.Add("p_ID",id);
-            parameters.Add("p_Code",roleDtos.Code);
-            parameters.Add("p_Name",roleDtos.Name);
-            parameters.Add("p_UpdatedBy",updatedById);
+            string pageCodeJson = JsonConvert.SerializeObject(roleDtos.PageCode);
+            string actionCodeJson = JsonConvert.SerializeObject(roleDtos.ActionCode);
+            var parameters = new DynamicParameters(new
+            {
+                p_ID=id,
+                p_Code = roleDtos.Code,
+                p_Name = roleDtos.Name,
+                p_UpdatedBy = updatedById,
+                p_PageCode = pageCodeJson,
+                p_ActionCode = actionCodeJson,
+            });
 
             try
             {
