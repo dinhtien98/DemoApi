@@ -7,7 +7,7 @@ namespace DemoApi.Services.User
     {
         public Task<List<Users>> GetAllUserAsync();
         public Task<Users> GetUserByIdAsync(int id);
-        public Task<bool> AddUserAsync(UserDto userDto, int createdById);
+        public Task<bool> AddUserAsync(UserDto userDto);
         public Task<bool> UpdateUserAsync(int id,UserDto userDto, int updatedById);
         public Task<Users> DeleteUserAsync(int id, UserDto userDto,int deletedById);
     }

@@ -59,16 +59,7 @@ namespace DemoApi.Controllers
         {
             try
             {
-                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim,out int createdById))
-                {
-                    return Unauthorized(new
-                    {
-                        message = "Invalid or missing user ID in token."
-                    });
-                }
-                var addUser = await _userService.AddUserAsync(userDto,createdById);
+                var addUser = await _userService.AddUserAsync(userDto);
                 return Ok("AddUser successfully");
             }
             catch (Exception ex)

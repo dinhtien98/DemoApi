@@ -19,7 +19,7 @@ namespace DemoApi.Services.User
         {
             _dapperConnection = dapperConnection;
         }
-        public async Task<bool> AddUserAsync(UserDto userDto, int createdById)
+        public async Task<bool> AddUserAsync(UserDto userDto)
         {
             var addUserProcedure = "sp_auth_user_insert";
 
@@ -42,7 +42,7 @@ namespace DemoApi.Services.User
                         p_InDate = userDto.InDate,
                         p_OutDate = userDto.OutDate,
                         p_Avatar = userDto.Avatar,
-                        p_CreatedBy = createdById,
+                        p_CreatedBy = userDto.CreatedBy,
                         p_RoleCode = userDto.RoleCode,
                     });
 
