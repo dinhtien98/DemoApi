@@ -1,4 +1,4 @@
-using DemoApi.Context;
+﻿using DemoApi.Context;
 using DemoApi.Services.AuthService;
 using DemoApi.Services.Login;
 using DemoApi.Services.Page;
@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
+using Microsoft.AspNetCore.Cors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,6 +90,17 @@ builder.Services.AddSwaggerGen(c =>
 
 });
 
+// Thêm dịch vụ CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost3000",policy =>
+    {
+        policy.WithOrigins("http://localhost:3000") // Cho phép yêu cầu từ localhost:3000
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // Build the application
 var app = builder.Build();
 
@@ -100,6 +112,7 @@ app.UseSwaggerUI(options =>
     options.SwaggerEndpoint("/swagger/v1/swagger.json","API v1");
 });
 
+app.UseCors("AllowLocalhost3000");
 app.UseHttpsRedirection();
 app.UseRouting();
 
