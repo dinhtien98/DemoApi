@@ -90,16 +90,11 @@ builder.Services.AddSwaggerGen(c =>
 
 });
 
-// Thêm dịch vụ CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowLocalhost3000",policy =>
-    {
-        policy.WithOrigins("http://localhost:3000") // Cho phép yêu cầu từ localhost:3000
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
+var allowedOrigins = new string[] {
+    "http://localhost:3000",
+    "http://localhost:4200"
+};
+
 
 // Build the application
 var app = builder.Build();
@@ -112,7 +107,14 @@ app.UseSwaggerUI(options =>
     options.SwaggerEndpoint("/swagger/v1/swagger.json","API v1");
 });
 
-app.UseCors("AllowLocalhost3000");
+app.UseCors(builder =>
+{
+    builder.WithOrigins(allowedOrigins)
+           .AllowAnyMethod()
+           .AllowAnyHeader()
+           .AllowCredentials()
+           .WithMethods("GET","POST","OPTIONS");
+});
 app.UseHttpsRedirection();
 app.UseRouting();
 
