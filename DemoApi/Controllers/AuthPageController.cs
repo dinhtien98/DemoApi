@@ -11,7 +11,7 @@ namespace DemoApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[CustomAuthorize]
+    [CustomAuthorize]
 
     public class authPageController: ControllerBase
     {

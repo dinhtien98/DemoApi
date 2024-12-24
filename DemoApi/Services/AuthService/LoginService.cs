@@ -96,7 +96,7 @@ namespace DemoApi.Services.Login
                     signingCredentials: new SigningCredentials(authSigningKey,SecurityAlgorithms.HmacSha256));
                     var tkn = new JwtSecurityTokenHandler().WriteToken(token);
 
-
+                    rsToken.id = userLogonUserDetails.Id;
                     rsToken.fullName = userLogonUserDetails.FullName;
                     rsToken.expires = DateTime.UtcNow.AddHours(1);
                     rsToken.token = tkn;

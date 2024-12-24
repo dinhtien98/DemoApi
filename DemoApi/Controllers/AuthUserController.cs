@@ -21,7 +21,7 @@ namespace DemoApi.Controllers
         }
 
         [HttpGet]
-        //[CustomAuthorize]
+        [CustomAuthorize]
         public async Task<IActionResult> GetAllStudents()
         {
             try

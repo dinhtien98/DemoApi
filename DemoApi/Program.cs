@@ -92,7 +92,8 @@ builder.Services.AddSwaggerGen(c =>
 
 var allowedOrigins = new string[] {
     "http://localhost:3000",
-    "http://localhost:4200"
+    "http://localhost:4200",
+    "http://localhost:7223"
 };
 
 
