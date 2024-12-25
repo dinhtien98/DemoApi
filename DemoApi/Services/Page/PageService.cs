@@ -85,7 +85,7 @@ namespace DemoApi.Services.Page
             }
         }
 
-        public async Task<List<Pages>> GetAllPagesAsync()
+        public async Task<List<GetPageDtos>> GetAllPagesAsync()
         {
             var procedureName = "sp_auth_page_selectAll";
             try
@@ -93,7 +93,7 @@ namespace DemoApi.Services.Page
                 using (var connection = _dapperConnection.GetConnection())
                 {
                     await connection.OpenAsync();
-                    var page = await connection.QueryAsync<Pages>(procedureName);
+                    var page = await connection.QueryAsync<GetPageDtos>(procedureName);
                     return page.ToList();
                 }
             }

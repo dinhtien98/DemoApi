@@ -11,6 +11,7 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 using Microsoft.AspNetCore.Cors;
+using DemoApi.Services.Action;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,7 @@ builder.Services.AddScoped<IPageService,PageService>();
 builder.Services.AddScoped<IRoleService,RoleService>();
 builder.Services.AddScoped<ILoginService,LoginService>();
 builder.Services.AddScoped<IPermissonUserService,PermissonUserService>();
+builder.Services.AddScoped<IActionService,ActionService>();
 
 // Add Authorization
 builder.Services.AddAuthorization();

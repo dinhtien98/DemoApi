@@ -5,7 +5,7 @@ namespace DemoApi.Services.Page
 {
     public interface IPageService
     {
-        public Task<List<Pages>> GetAllPagesAsync();
+        public Task<List<GetPageDtos>> GetAllPagesAsync();
         public Task<Pages> GetPageByIdAsync(int id);
         public Task<bool> AddPageAsync(PageDtos pageDtos, int createdById);
         public Task<bool> UpdatePageAsync(int id,PageDtos pageDtos,int updatedById);
