@@ -5,7 +5,7 @@ namespace DemoApi.Services.User
 {
     public interface IUserService
     {
-        public Task<List<Users>> GetAllUserAsync();
+        public Task<List<GetUserDtos>> GetAllUserAsync();
         public Task<Users> GetUserByIdAsync(int id);
         public Task<bool> AddUserAsync(UserDto userDto);
         public Task<bool> UpdateUserAsync(int id,UserDto userDto, int updatedById);

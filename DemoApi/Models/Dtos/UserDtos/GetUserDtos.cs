@@ -1,68 +1,86 @@
-﻿using DemoApi.Commons;
-using DemoApi.Models.Domain.Role;
-using DemoApi.Models.Dtos.PageDtos;
+﻿using Newtonsoft.Json;
 
 namespace DemoApi.Models.Dtos.UserDtos
 {
-    public class UserDto : Common
+    public class GetUserDtos
     {
+        public int Id
+        {
+            get;
+        }
         public string UserName
         {
-            get; set;
+            get;
         }
         public string Password
         {
-            get; set;
+            get;
+        }
+        public string FullName
+        {
+            get;
+        }
+        public string Email
+        {
+            get;
         }
         public int FirstLogin
         {
-            get; set;
+            get;
         }
         public string InDate
         {
-            get; set;
+            get;
         }
         public string OutDate
         {
-            get; set;
+            get;
         }
         public int? FailCount
         {
-            get; set;
+            get;
         }
         public int IsLocked { get; set; } = 0;
+        public string Avatar
+        {
+            get;
+        }
         public DateTime? LastLogin
         {
-            get; set;
+            get;
         }
         public DateTime? CreatedTime
         {
-            get; set;
+            get;
         }
         public string CreatedBy
         {
-            get; set;
+            get;
         }
         public DateTime? UpdatedTime
         {
-            get; set;
+            get;
         }
         public string UpdatedBy
         {
-            get; set;
+            get;
         }
         public string DeletedBy
         {
-            get; set;
+            get;
         }
         public int DeletedFlag { get; set; } = 0;
         public DateTime? DeletedTime
         {
-            get; set;
+            get;
         }
-        public List<Json> RoleCode
+        public string RoleName
         {
-            get; set;
+            get;
         }
+        //public List<string> RoleNamesList
+        //{
+        //    get => string.IsNullOrEmpty(RoleName) ? new List<string>() : JsonConvert.DeserializeObject<List<string>>(RoleName);
+        //}
     }
 }

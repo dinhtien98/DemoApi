@@ -1,4 +1,6 @@
-﻿namespace DemoApi.Models.Dtos.PageDtos
+﻿using Newtonsoft.Json;
+
+namespace DemoApi.Models.Dtos.PageDtos
 {
     public class GetPageDtos
     {
@@ -38,13 +40,64 @@
         {
             get;
         }
+        public DateTime? CreatedTime
+        {
+            get;
+        }
+        public string CreatedBy
+        {
+            get;
+        }
+        public DateTime? UpdatedTime
+        {
+            get;
+        }
+        public string UpdatedBy
+        {
+            get;
+        }
+        public string DeletedBy
+        {
+            get;
+        }
+        public int DeletedFlag { get; set; } = 0;
+        public DateTime? DeletedTime
+        {
+            get;
+        }
         public string RoleName
         {
             get;
         }
+
+        public List<string> RoleNamesList
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(RoleName))
+                    return new List<string>();
+
+                var cleanedRoleName = RoleName.Replace("\\","");
+                return JsonConvert.DeserializeObject<List<string>>(cleanedRoleName);
+            }
+        }
+
         public string ActionName
         {
             get;
         }
+
+        public List<string> ActionNamesList
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(ActionName))
+                    return new List<string>();
+
+                var cleanedActionName = ActionName.Replace("\\","");
+                return JsonConvert.DeserializeObject<List<string>>(cleanedActionName);
+            }
+        }
+
     }
 }

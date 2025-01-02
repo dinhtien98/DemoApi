@@ -8,6 +8,7 @@ using System.Data;
 using BCrypt.Net;
 using Newtonsoft.Json;
 using Org.BouncyCastle.Asn1.Ocsp;
+using DemoApi.Models.Dtos.PageDtos;
 
 namespace DemoApi.Services.User
 {
@@ -31,19 +32,16 @@ namespace DemoApi.Services.User
                 {
                     var plainPassword = userDto.Password;
                     var hashedPassword = BCrypt.Net.BCrypt.HashPassword(plainPassword);
-
+                    string roleCodeJson = JsonConvert.SerializeObject(userDto.RoleCode);
                     var addUserParameters = new DynamicParameters(new
                     {
                         p_UserName = userDto.UserName,
                         p_PassWord = hashedPassword,
                         p_FullName = userDto.FullName,
                         p_Email = userDto.Email,
-                        p_FirstLogin = userDto.FirstLogin,
-                        p_InDate = userDto.InDate,
-                        p_OutDate = userDto.OutDate,
                         p_Avatar = userDto.Avatar,
                         p_CreatedBy = userDto.CreatedBy,
-                        p_RoleCode = userDto.RoleCode,
+                        p_RoleCode = roleCodeJson,
                     });
 
                     await connection.ExecuteAsync(
@@ -91,7 +89,7 @@ namespace DemoApi.Services.User
             }
         }
 
-        public async Task<List<Users>> GetAllUserAsync()
+        public async Task<List<GetUserDtos>> GetAllUserAsync()
         {
             var procedureName = "sp_auth_user_selectAll";
             try
@@ -99,7 +97,7 @@ namespace DemoApi.Services.User
                 using (var connection = _dapperConnection.GetConnection())
                 {
                     await connection.OpenAsync();
-                    var user = await connection.QueryAsync<Users>(procedureName);
+                    var user = await connection.QueryAsync<GetUserDtos>(procedureName);
                     return user.ToList();
                 }
             }
@@ -139,19 +137,19 @@ namespace DemoApi.Services.User
                 {
                     var plainPassword = userDto.Password;
                     var hashedPassword = BCrypt.Net.BCrypt.HashPassword(plainPassword);
-
+                    string roleCodeJson = JsonConvert.SerializeObject(userDto.RoleCode);
                     var addUserParameters = new DynamicParameters(new
                     {
                         p_id=id,
                         p_PassWord = hashedPassword,
                         p_FullName = userDto.FullName,
                         p_Email = userDto.Email,
-                        p_FirstLogin = userDto.FirstLogin,
+                        p_IsLocked = userDto.IsLocked,
                         p_InDate = userDto.InDate,
                         p_OutDate = userDto.OutDate,
                         p_Avatar = userDto.Avatar,
                         p_UpdatedBy = updatedById,
-                        p_RoleCode = userDto.RoleCode,
+                        p_RoleCode = roleCodeJson,
                     });
 
                     await connection.ExecuteAsync(
@@ -164,7 +162,7 @@ namespace DemoApi.Services.User
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Failed to execute AddUser stored procedure: {ex.Message}");
+                    Console.WriteLine($"Failed to execute updateUser stored procedure: {ex.Message}");
                     return false;
                 }
             }
