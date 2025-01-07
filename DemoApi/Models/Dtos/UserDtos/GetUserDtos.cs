@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using DemoApi.Models.Dtos.PageDtos;
+using Newtonsoft.Json;
 
 namespace DemoApi.Models.Dtos.UserDtos
 {
@@ -74,13 +75,9 @@ namespace DemoApi.Models.Dtos.UserDtos
         {
             get;
         }
-        public string RoleName
+        public List<Json> RoleCode
         {
             get;
         }
-        //public List<string> RoleNamesList
-        //{
-        //    get => string.IsNullOrEmpty(RoleName) ? new List<string>() : JsonConvert.DeserializeObject<List<string>>(RoleName);
-        //}
     }
 }

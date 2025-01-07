@@ -16,7 +16,7 @@ namespace DemoApi.Services.Page
         {
             _dapperConnection = dapperConnection;
         }
-        public async Task<bool> AddPageAsync(PageDtos pageDtos, int createdById)
+        public async Task<bool> AddPageAsync(PageDtos pageDtos,int createdById)
         {
             using (var connection = _dapperConnection.GetConnection())
             {
@@ -24,7 +24,6 @@ namespace DemoApi.Services.Page
                 var procedureName = "sp_auth_page_insert";
                 try
                 {
-                    string roleCodeJson = JsonConvert.SerializeObject(pageDtos.RoleCode);
                     string actionCodeJson = JsonConvert.SerializeObject(pageDtos.ActionCode);
                     var addUserParameters = new DynamicParameters(new
                     {
@@ -37,7 +36,6 @@ namespace DemoApi.Services.Page
                         p_Icon = pageDtos.Icon,
                         p_Sort = pageDtos.Sort,
                         p_CreatedBy = createdById,
-                        p_RoleCode = roleCodeJson,
                         p_ActionCode = actionCodeJson,
                     });
 
@@ -57,7 +55,7 @@ namespace DemoApi.Services.Page
             }
         }
 
-        public async Task<Pages> DeletePageAsync(int id,PageDtos pageDtos, int deletedById)
+        public async Task<Pages> DeletePageAsync(int id,PageDtos pageDtos,int deletedById)
         {
             var procedureName = "sp_auth_page_delete";
             var parameters = new DynamicParameters();
@@ -93,8 +91,12 @@ namespace DemoApi.Services.Page
                 using (var connection = _dapperConnection.GetConnection())
                 {
                     await connection.OpenAsync();
-                    var page = await connection.QueryAsync<GetPageDtos>(procedureName);
-                    return page.ToList();
+                    var pages = (await connection.QueryAsync<GetPageDtos>(
+                       procedureName,
+                       commandType: CommandType.StoredProcedure
+                    )).ToList();
+
+                    return pages;
                 }
             }
             catch (Exception ex)
@@ -123,16 +125,15 @@ namespace DemoApi.Services.Page
             }
         }
 
-        public async Task<bool> UpdatePageAsync(int id,PageDtos pageDtos, int updatedById)
+        public async Task<bool> UpdatePageAsync(int id,PageDtos pageDtos,int updatedById)
         {
-            
+
             using (var connection = _dapperConnection.GetConnection())
             {
                 await connection.OpenAsync();
                 var procedureName = "sp_auth_page_update";
                 try
                 {
-                    string roleCodeJson = JsonConvert.SerializeObject(pageDtos.RoleCode);
                     string actionCodeJson = JsonConvert.SerializeObject(pageDtos.ActionCode);
                     var addUserParameters = new DynamicParameters(new
                     {
@@ -146,7 +147,6 @@ namespace DemoApi.Services.Page
                         p_Icon = pageDtos.Icon,
                         p_Sort = pageDtos.Sort,
                         p_UPDATEDBY = updatedById,
-                        p_RoleCode = roleCodeJson,
                         p_ActionCode = actionCodeJson,
                     });
 

@@ -8,10 +8,12 @@ using DemoApi.Services.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.Filters;
 using System.Text;
-using Microsoft.AspNetCore.Cors;
 using DemoApi.Services.Action;
+using Dapper;
+
+
+SqlMapper.AddTypeHandler(new JsonTypeHandler());
 
 var builder = WebApplication.CreateBuilder(args);
 

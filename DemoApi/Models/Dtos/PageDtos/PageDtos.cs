@@ -62,10 +62,6 @@ namespace DemoApi.Models.Dtos.PageDtos
             get; set;
         }
 
-        public List<Json> RoleCode
-        {
-            get; set;
-        }
         public List<Json> ActionCode
         {
             get; set;

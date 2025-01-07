@@ -97,8 +97,12 @@ namespace DemoApi.Services.User
                 using (var connection = _dapperConnection.GetConnection())
                 {
                     await connection.OpenAsync();
-                    var user = await connection.QueryAsync<GetUserDtos>(procedureName);
-                    return user.ToList();
+                    var user = (await connection.QueryAsync<GetUserDtos>(
+                      procedureName,
+                      commandType: CommandType.StoredProcedure
+                   )).ToList();
+
+                    return user;
                 }
             }
             catch (Exception ex)

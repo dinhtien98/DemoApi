@@ -10,94 +10,65 @@ namespace DemoApi.Models.Dtos.PageDtos
         }
         public string Code
         {
-            get;
+            get; set;
         }
         public string Name
         {
-            get;
+            get; set;
         }
         public string ParentCode
         {
-            get;
+            get; set;
         }
         public int Level
         {
-            get;
+            get; set;
         }
         public string Url
         {
-            get;
+            get; set;
         }
         public int Hidden
         {
-            get;
+            get; set;
         }
         public string Icon
         {
-            get;
+            get; set;
         }
         public int Sort
         {
-            get;
+            get; set;
         }
         public DateTime? CreatedTime
         {
-            get;
+            get; set;
         }
         public string CreatedBy
         {
-            get;
+            get; set;
         }
         public DateTime? UpdatedTime
         {
-            get;
+            get; set;
         }
         public string UpdatedBy
         {
-            get;
+            get; set;
         }
         public string DeletedBy
         {
-            get;
+            get; set;
         }
         public int DeletedFlag { get; set; } = 0;
         public DateTime? DeletedTime
         {
-            get;
+            get; set;
         }
-        public string RoleName
+
+        public List<Json> ActionCode
         {
-            get;
+            get; set;
         }
-
-        public List<string> RoleNamesList
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(RoleName))
-                    return new List<string>();
-
-                var cleanedRoleName = RoleName.Replace("\\","");
-                return JsonConvert.DeserializeObject<List<string>>(cleanedRoleName);
-            }
-        }
-
-        public string ActionName
-        {
-            get;
-        }
-
-        public List<string> ActionNamesList
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(ActionName))
-                    return new List<string>();
-
-                var cleanedActionName = ActionName.Replace("\\","");
-                return JsonConvert.DeserializeObject<List<string>>(cleanedActionName);
-            }
-        }
-
     }
 }
