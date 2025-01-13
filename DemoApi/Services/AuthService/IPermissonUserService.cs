@@ -1,9 +1,9 @@
-﻿using DemoApi.Models.Dtos.PermissonUserDto;
+﻿using DemoApi.Models.Dtos.PageDtos;
 
 namespace DemoApi.Services.AuthService
 {
     public interface IPermissonUserService
     {
-        Task<List<PermissonUserDto>> GetPermissonUser(int id);
+        Task<List<GetPageDtos>> GetPermissonUser(int id);
     }
 }

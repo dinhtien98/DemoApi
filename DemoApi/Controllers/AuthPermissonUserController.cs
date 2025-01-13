@@ -4,6 +4,7 @@ using DemoApi.Services.Page;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
 
 namespace DemoApi.Controllers
@@ -37,23 +38,12 @@ namespace DemoApi.Controllers
                
                 var data = await _permissonUserService.GetPermissonUser(userId);
 
-                
-                var response = new PermissonResponce
-                {
-                    data = data,
-                    total = data.Count(),
-                    pageIndex = 0
-                };
 
-                return Ok(response);
+                return Ok(data);
             }
             catch (Exception ex)
             {
-                return StatusCode(500,new
-                {
-                    message = "An error occurred while processing your request.",
-                    details = ex.Message
-                });
+                return StatusCode(500,ex.Message);
             }
         }
 

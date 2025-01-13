@@ -7,7 +7,7 @@ namespace DemoApi.Services.Role
 {
     public interface IRoleService
     {
-        public Task<List<Roles>> GetAllRolesAsync();
+        public Task<List<GetRoleDtos>> GetAllRolesAsync();
         public Task<Roles> GetRoleByIdAsync(int id);
         public Task<Roles> AddRoleAsync(RoleDtos roleDtos, int createdById);
         public Task<Roles> UpdateRoleAsync(int id,RoleDtos roleDtos,int updatedById);

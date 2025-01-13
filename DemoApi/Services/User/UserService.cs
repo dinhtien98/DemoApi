@@ -139,15 +139,13 @@ namespace DemoApi.Services.User
                 var procedureName = "sp_auth_user_update";
                 try
                 {
-                    var plainPassword = userDto.Password;
-                    var hashedPassword = BCrypt.Net.BCrypt.HashPassword(plainPassword);
                     string roleCodeJson = JsonConvert.SerializeObject(userDto.RoleCode);
                     var addUserParameters = new DynamicParameters(new
                     {
                         p_id=id,
-                        p_PassWord = hashedPassword,
                         p_FullName = userDto.FullName,
                         p_Email = userDto.Email,
+                        P_FirstLogin = userDto.FirstLogin,
                         p_IsLocked = userDto.IsLocked,
                         p_InDate = userDto.InDate,
                         p_OutDate = userDto.OutDate,

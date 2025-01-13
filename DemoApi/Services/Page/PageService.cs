@@ -86,6 +86,7 @@ namespace DemoApi.Services.Page
         public async Task<List<GetPageDtos>> GetAllPagesAsync()
         {
             var procedureName = "sp_auth_page_selectAll";
+            
             try
             {
                 using (var connection = _dapperConnection.GetConnection())

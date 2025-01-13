@@ -82,7 +82,7 @@ namespace DemoApi.Services.Role
             }
         }
 
-        public async Task<List<Roles>> GetAllRolesAsync()
+        public async Task<List<GetRoleDtos>> GetAllRolesAsync()
         {
             var procedureName = "sp_auth_role_selectAll";
             try
@@ -90,8 +90,11 @@ namespace DemoApi.Services.Role
                 using (var connection = _dapperConnection.GetConnection())
                 {
                     await connection.OpenAsync();
-                    var role = await connection.QueryAsync<Roles>(procedureName);
-                    return role.ToList();
+                    var roles = (await connection.QueryAsync<GetRoleDtos>(
+                       procedureName,
+                       commandType: CommandType.StoredProcedure
+                    )).ToList();
+                    return roles;
                 }
             }
             catch (Exception ex)

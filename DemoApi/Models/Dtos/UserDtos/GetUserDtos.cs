@@ -1,5 +1,4 @@
 ﻿using DemoApi.Models.Dtos.PageDtos;
-using Newtonsoft.Json;
 
 namespace DemoApi.Models.Dtos.UserDtos
 {
@@ -7,77 +6,77 @@ namespace DemoApi.Models.Dtos.UserDtos
     {
         public int Id
         {
-            get;
+            get; set;
         }
         public string UserName
         {
-            get;
+            get; set;
         }
         public string Password
         {
-            get;
+            get; set;
         }
         public string FullName
         {
-            get;
+            get; set;
         }
         public string Email
         {
-            get;
+            get; set;
         }
         public int FirstLogin
         {
-            get;
+            get; set;
         }
         public string InDate
         {
-            get;
+            get; set;
         }
         public string OutDate
         {
-            get;
+            get; set;
         }
         public int? FailCount
         {
-            get;
+            get; set;
         }
         public int IsLocked { get; set; } = 0;
         public string Avatar
         {
-            get;
+            get; set;
         }
         public DateTime? LastLogin
         {
-            get;
+            get; set;
         }
         public DateTime? CreatedTime
         {
-            get;
+            get; set;
         }
         public string CreatedBy
         {
-            get;
+            get; set;
         }
         public DateTime? UpdatedTime
         {
-            get;
+            get; set;
         }
         public string UpdatedBy
         {
-            get;
+            get; set;
         }
         public string DeletedBy
         {
-            get;
+            get; set;
         }
         public int DeletedFlag { get; set; } = 0;
         public DateTime? DeletedTime
         {
-            get;
+            get; set;
         }
         public List<Json> RoleCode
         {
-            get;
+            get; set;
         }
     }
 }

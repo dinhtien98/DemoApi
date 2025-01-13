@@ -2,6 +2,7 @@
 using Dapper;
 using DemoApi.Context;
 using DemoApi.Models.Domain.Pages;
+using DemoApi.Models.Dtos.PageDtos;
 using DemoApi.Models.Dtos.PermissonUserDto;
 using System.Data;
 
@@ -14,22 +15,24 @@ namespace DemoApi.Services.AuthService
         {
             _dapperConnection = dapperConnection;
         }
-        public async Task<List<PermissonUserDto>> GetPermissonUser(int id)
+        public async Task<List<GetPageDtos>> GetPermissonUser(int id)
         {
-            var procedureName = "sp_getUserPageRole";
+            var procedureName = "sp_auth_page_get_permisson_user";
+
             try
             {
+                var parameters = new DynamicParameters();
+                parameters.Add("p_ID",id);
                 using (var connection = _dapperConnection.GetConnection())
                 {
                     await connection.OpenAsync();
+                    var pages = (await connection.QueryAsync<GetPageDtos>(
+                       procedureName,
+                       parameters,
+                       commandType: CommandType.StoredProcedure
+                    )).ToList();
 
-                    var res = await connection.QueryAsync<PermissonUserDto>(procedureName,
-                        new
-                        {
-                            p_ID = id
-                        },
-                    commandType: CommandType.StoredProcedure);
-                    return res.ToList();
+                    return pages;
                 }
             }
             catch (Exception ex)
@@ -37,5 +40,6 @@ namespace DemoApi.Services.AuthService
                 throw new Exception($"Error: {ex.Message}",ex);
             }
         }
+
     }
 }
