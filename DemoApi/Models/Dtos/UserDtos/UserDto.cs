@@ -31,7 +31,7 @@ namespace DemoApi.Models.Dtos.UserDtos
             get; set;
         }
         public int IsLocked { get; set; } = 0;
-        public DateTime? LastLogin
+        public string LastLogin
         {
             get; set;
         }

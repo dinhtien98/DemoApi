@@ -45,7 +45,7 @@ namespace DemoApi.Models.Dtos.UserDtos
         {
             get; set;
         }
-        public DateTime? LastLogin
+        public string LastLogin
         {
             get; set;
         }

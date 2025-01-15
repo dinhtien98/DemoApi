@@ -146,6 +146,7 @@ namespace DemoApi.Services.User
                         p_FullName = userDto.FullName,
                         p_Email = userDto.Email,
                         P_FirstLogin = userDto.FirstLogin,
+                        p_LastLogin = userDto.LastLogin,
                         p_IsLocked = userDto.IsLocked,
                         p_InDate = userDto.InDate,
                         p_OutDate = userDto.OutDate,
