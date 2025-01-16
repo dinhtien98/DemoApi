@@ -11,6 +11,8 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using DemoApi.Services.Action;
 using Dapper;
+using DemoApi.Services.Product;
+using DemoApi.Services.Customer;
 
 
 SqlMapper.AddTypeHandler(new JsonTypeHandler());
@@ -33,6 +35,8 @@ builder.Services.AddScoped<IRoleService,RoleService>();
 builder.Services.AddScoped<ILoginService,LoginService>();
 builder.Services.AddScoped<IPermissonUserService,PermissonUserService>();
 builder.Services.AddScoped<IActionService,ActionService>();
+builder.Services.AddScoped<IProductService,ProductService>();
+builder.Services.AddScoped<ICustomerService,CustomerService>();
 
 // Add Authorization
 builder.Services.AddAuthorization();

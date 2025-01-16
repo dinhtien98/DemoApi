@@ -85,7 +85,7 @@ namespace DemoApi.Services.User
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error occurred while adding user: {ex.Message}",ex);
+                throw new Exception($"Error: {ex.Message}",ex);
             }
         }
 

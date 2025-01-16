@@ -1,9 +1,8 @@
-﻿using DemoApi.Models.Domain.Student;
-using DemoApi.Models.Dtos.StudentDtos;
-using DemoApi.Models.Dtos.UserDtos;
-using DemoApi.Services.User;
+﻿using DemoApi.Models.Dtos.CustomerDtos;
+using DemoApi.Models.Dtos.ProductDtos;
+using DemoApi.Services.Customer;
+using DemoApi.Services.Product;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -11,23 +10,21 @@ namespace DemoApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    
-    public class authUserController: ControllerBase
+    public class CustomerController: ControllerBase
     {
-        private readonly IUserService _userService;
-        public authUserController(IUserService userService)
+        private readonly ICustomerService _customerService;
+        public CustomerController(ICustomerService customerService)
         {
-            _userService = userService;
+            _customerService = customerService;
         }
-
         [HttpGet]
         [CustomAuthorize]
-        public async Task<IActionResult> GetAllUser()
+        public async Task<IActionResult> GetAllCustomer()
         {
             try
             {
-                var Users = await _userService.GetAllUserAsync();
-                return Ok(Users);
+                var res = await _customerService.GetAllCustomerAsync();
+                return Ok(res);
             }
             catch (Exception ex)
             {
@@ -35,31 +32,40 @@ namespace DemoApi.Controllers
             }
         }
 
-        [HttpGet("{id}",Name = "User_id")]
+        [HttpGet("{id}",Name = "Customer_id")]
         [CustomAuthorize]
         public async Task<IActionResult> GetUserById(int id)
         {
             try
             {
-                var user = await _userService.GetUserByIdAsync(id);
-                if (user == null)
+                var res = await _customerService.GetCustomerByIdAsync(id);
+                if (res == null)
                 {
                     return NotFound();
                 }
-                return Ok(user);
+                return Ok(res);
             }
-            catch (Exception ex) 
-            { 
+            catch (Exception ex)
+            {
                 return StatusCode(500,ex.Message);
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddUser([FromBody] UserDto userDto)
+        public async Task<IActionResult> AddCustomer([FromBody] CustomerDtos customerDtos)
         {
             try
             {
-                var addUser = await _userService.AddUserAsync(userDto);
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim,out int createdById))
+                {
+                    return Unauthorized(new
+                    {
+                        message = "Invalid or missing user ID in token."
+                    });
+                }
+                var res = await _customerService.AddCustomerAsync(customerDtos,createdById);
                 return Ok("AddUser successfully");
             }
             catch (Exception ex)
@@ -73,7 +79,7 @@ namespace DemoApi.Controllers
 
         [HttpPut("{id}")]
         [CustomAuthorize]
-        public async Task<IActionResult> UpdateUser(int id,[FromBody] UserDto userDto)
+        public async Task<IActionResult> UpdateCustomer(int id,[FromBody] CustomerDtos customerDtos)
         {
             try
             {
@@ -86,10 +92,10 @@ namespace DemoApi.Controllers
                         message = "Invalid or missing user ID in token."
                     });
                 }
-                var user = await _userService.GetUserByIdAsync(id);
-                if (user == null)
+                var res = await _customerService.GetCustomerByIdAsync(id);
+                if (res == null)
                     return NotFound();
-                await _userService.UpdateUserAsync(id,userDto,updatedById);
+                await _customerService.UpdateCustomerAsync(id,customerDtos,updatedById);
                 return Ok("update successfully");
             }
             catch (Exception ex)
@@ -103,7 +109,7 @@ namespace DemoApi.Controllers
 
         [HttpDelete]
         [CustomAuthorize]
-        public async Task<IActionResult> DeleteUser(int id,[FromBody] UserDto userDto)
+        public async Task<IActionResult> DeleteCustomer(int id,[FromBody] CustomerDtos customerDtos)
         {
             try
             {
@@ -116,10 +122,10 @@ namespace DemoApi.Controllers
                         message = "Invalid or missing user ID in token."
                     });
                 }
-                var user = await _userService.GetUserByIdAsync(id);
-                if (user == null)
+                var res = await _customerService.GetCustomerByIdAsync(id);
+                if (res == null)
                     return NotFound();
-                await _userService.DeleteUserAsync(id,userDto,deletedById);
+                await _customerService.DeleteCustomerAsync(id,customerDtos,deletedById);
                 return Ok("delete successfully");
             }
             catch (Exception ex)
