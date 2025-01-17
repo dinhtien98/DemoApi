@@ -1,4 +1,6 @@
-﻿namespace DemoApi.Models.Dtos.Tokens
+﻿using DemoApi.Models.Dtos.PageDtos;
+
+namespace DemoApi.Models.Dtos.Tokens
 {
     public class Token
     {
@@ -16,5 +18,9 @@
             get;set;
         }
         public string userName { get; set; }
+        public List<Json> roleCode
+        {
+            get;set;
+        }
     }
 }

@@ -44,13 +44,13 @@ namespace DemoApi.Services.User
                         p_RoleCode = roleCodeJson,
                     });
 
-                    await connection.ExecuteAsync(
+                    var rowsAffected = await connection.ExecuteAsync(
                         addUserProcedure,
                         addUserParameters,
                         commandType: CommandType.StoredProcedure
                     );
 
-                    return true;
+                    return rowsAffected > 0;
                 }
                 catch (Exception ex)
                 {

@@ -1,5 +1,6 @@
 ﻿using DemoApi.Commons;
 using DemoApi.Models.Domain.Role;
+using DemoApi.Models.Dtos.PageDtos;
 
 namespace DemoApi.Models.Domain.Users
 {
@@ -63,7 +64,7 @@ namespace DemoApi.Models.Domain.Users
         {
             get; set;
         }
-        public string RoleCode
+        public List<Json> RoleCode
         {
             get; set;
         }

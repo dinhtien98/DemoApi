@@ -1,6 +1,5 @@
-﻿using DemoApi.Models.Dtos.CustomerDtos;
-using DemoApi.Models.Dtos.ProductDtos;
-using DemoApi.Services.Customer;
+﻿using DemoApi.Models.Dtos.ProductDtos;
+using DemoApi.Models.Dtos.UserDtos;
 using DemoApi.Services.Product;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,20 +9,20 @@ namespace DemoApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CustomerController: ControllerBase
+    public class AuthProductController: ControllerBase
     {
-        private readonly ICustomerService _customerService;
-        public CustomerController(ICustomerService customerService)
+        private readonly IProductService _productService;
+        public AuthProductController(IProductService productService)
         {
-            _customerService = customerService;
+            _productService = productService;
         }
         [HttpGet]
         [CustomAuthorize]
-        public async Task<IActionResult> GetAllCustomer()
+        public async Task<IActionResult> GetAllProduct()
         {
             try
             {
-                var res = await _customerService.GetAllCustomerAsync();
+                var res = await _productService.GetAllProductAsync();
                 return Ok(res);
             }
             catch (Exception ex)
@@ -32,13 +31,13 @@ namespace DemoApi.Controllers
             }
         }
 
-        [HttpGet("{id}",Name = "Customer_id")]
+        [HttpGet("{id}",Name = "Product_id")]
         [CustomAuthorize]
-        public async Task<IActionResult> GetUserById(int id)
+        public async Task<IActionResult> GetProductById(int id)
         {
             try
             {
-                var res = await _customerService.GetCustomerByIdAsync(id);
+                var res = await _productService.GetProductByIdAsync(id);
                 if (res == null)
                 {
                     return NotFound();
@@ -52,7 +51,7 @@ namespace DemoApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddCustomer([FromBody] CustomerDtos customerDtos)
+        public async Task<IActionResult> AddProduct([FromBody] ProductDtos productDtos)
         {
             try
             {
@@ -65,8 +64,8 @@ namespace DemoApi.Controllers
                         message = "Invalid or missing user ID in token."
                     });
                 }
-                var res = await _customerService.AddCustomerAsync(customerDtos,createdById);
-                return Ok("AddUser successfully");
+                var res = await _productService.AddProductAsync(productDtos, createdById);
+                return Ok("Add successfully");
             }
             catch (Exception ex)
             {
@@ -79,7 +78,7 @@ namespace DemoApi.Controllers
 
         [HttpPut("{id}")]
         [CustomAuthorize]
-        public async Task<IActionResult> UpdateCustomer(int id,[FromBody] CustomerDtos customerDtos)
+        public async Task<IActionResult> UpdateProduct(int id,[FromBody] ProductDtos productDtos)
         {
             try
             {
@@ -92,10 +91,10 @@ namespace DemoApi.Controllers
                         message = "Invalid or missing user ID in token."
                     });
                 }
-                var res = await _customerService.GetCustomerByIdAsync(id);
+                var res = await _productService.GetProductByIdAsync(id);
                 if (res == null)
                     return NotFound();
-                await _customerService.UpdateCustomerAsync(id,customerDtos,updatedById);
+                await _productService.UpdateProductAsync(id,productDtos,updatedById);
                 return Ok("update successfully");
             }
             catch (Exception ex)
@@ -109,7 +108,7 @@ namespace DemoApi.Controllers
 
         [HttpDelete]
         [CustomAuthorize]
-        public async Task<IActionResult> DeleteCustomer(int id,[FromBody] CustomerDtos customerDtos)
+        public async Task<IActionResult> DeleteProduct(int id,[FromBody] ProductDtos productDtos)
         {
             try
             {
@@ -122,10 +121,10 @@ namespace DemoApi.Controllers
                         message = "Invalid or missing user ID in token."
                     });
                 }
-                var res = await _customerService.GetCustomerByIdAsync(id);
+                var res = await _productService.GetProductByIdAsync(id);
                 if (res == null)
                     return NotFound();
-                await _customerService.DeleteCustomerAsync(id,customerDtos,deletedById);
+                await _productService.DeleteProductAsync(id,productDtos,deletedById);
                 return Ok("delete successfully");
             }
             catch (Exception ex)

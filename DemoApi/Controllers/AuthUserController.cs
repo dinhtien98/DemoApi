@@ -59,17 +59,34 @@ namespace DemoApi.Controllers
         {
             try
             {
-                var addUser = await _userService.AddUserAsync(userDto);
-                return Ok("AddUser successfully");
+                var isSuccess = await _userService.AddUserAsync(userDto);
+
+                if (isSuccess)
+                {
+                    return Ok(new
+                    {
+                        message = "User added successfully"
+                    });
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        error = "Failed to add user"
+                    });
+                }
             }
             catch (Exception ex)
             {
                 return StatusCode(500,new
                 {
-                    error = ex.Message
+                    error = "An unexpected error occurred",
+                    details = ex.Message
                 });
             }
         }
+
+
 
         [HttpPut("{id}")]
         [CustomAuthorize]

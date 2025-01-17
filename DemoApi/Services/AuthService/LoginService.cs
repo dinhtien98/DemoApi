@@ -101,6 +101,7 @@ namespace DemoApi.Services.Login
                     rsToken.expires = DateTime.UtcNow.AddHours(1);
                     rsToken.token = tkn;
                     rsToken.userName = userLogonUserDetails.UserName;
+                    rsToken.roleCode = userLogonUserDetails.RoleCode;
                     return rsToken;
                 }
             }
