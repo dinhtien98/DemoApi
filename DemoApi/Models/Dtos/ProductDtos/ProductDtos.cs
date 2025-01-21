@@ -30,6 +30,10 @@
         {
             get; set;
         }
+        public decimal Discount
+        {
+            get; set;
+        }
         public DateTime? CreatedTime
         {
             get; set;

@@ -29,6 +29,7 @@ namespace DemoApi.Services.Product
                         p_stockQuantity = productDtos.StockQuantity,
                         p_category = productDtos.Category,
                         p_supplier = productDtos.Supplier,
+                        p_discount = productDtos.Discount,
                         p_createdBy = createdById,
                     });
 
@@ -135,6 +136,7 @@ namespace DemoApi.Services.Product
                         p_stockQuantity = productDtos.StockQuantity,
                         p_category = productDtos.Category,
                         p_supplier = productDtos.Supplier,
+                        p_discount = productDtos.Discount,
                         p_updatedBy = updatedById,
                     });
 
