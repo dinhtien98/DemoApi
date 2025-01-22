@@ -1,6 +1,8 @@
 ﻿using Dapper;
 using DemoApi.Context;
 using DemoApi.Models.Dtos.ProductDtos;
+using DemoApi.Models.Dtos.UserDtos;
+using Newtonsoft.Json;
 using System.Data;
 
 namespace DemoApi.Services.Product
@@ -21,6 +23,7 @@ namespace DemoApi.Services.Product
                 var procedureName = "sp_product_insert";
                 try
                 {
+                    string ImageUrlJson = JsonConvert.SerializeObject(productDtos.ImageUrl);
                     var addProductParameters = new DynamicParameters(new
                     {
                         p_productName = productDtos.ProductName,
@@ -31,6 +34,7 @@ namespace DemoApi.Services.Product
                         p_supplier = productDtos.Supplier,
                         p_discount = productDtos.Discount,
                         p_createdBy = createdById,
+                        p_imageUrl = ImageUrlJson,
                     });
 
                     await connection.ExecuteAsync(
@@ -127,6 +131,7 @@ namespace DemoApi.Services.Product
                 var procedureName = "sp_product_update";
                 try
                 {
+                    string ImageUrlJson = JsonConvert.SerializeObject(productDtos.ImageUrl);
                     var addProductParameters = new DynamicParameters(new
                     {
                         p_id = id,
@@ -138,6 +143,7 @@ namespace DemoApi.Services.Product
                         p_supplier = productDtos.Supplier,
                         p_discount = productDtos.Discount,
                         p_updatedBy = updatedById,
+                        p_imageUrl = ImageUrlJson,
                     });
 
                     await connection.ExecuteAsync(

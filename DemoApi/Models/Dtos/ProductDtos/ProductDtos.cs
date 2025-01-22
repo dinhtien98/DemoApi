@@ -1,4 +1,6 @@
-﻿namespace DemoApi.Models.Dtos.ProductDtos
+﻿using DemoApi.Models.Dtos.PageDtos;
+
+namespace DemoApi.Models.Dtos.ProductDtos
 {
     public class ProductDtos
     {
@@ -62,5 +64,6 @@
         {
             get; set;
         }
+        public List<Json> ImageUrl { get; set; }
     }
 }

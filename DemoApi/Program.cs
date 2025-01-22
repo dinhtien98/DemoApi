@@ -12,6 +12,8 @@ using System.Text;
 using DemoApi.Services.Action;
 using Dapper;
 using DemoApi.Services.Product;
+using DemoApi.Services.UploadImage;
+using DemoApi.Filters;
 
 
 SqlMapper.AddTypeHandler(new JsonTypeHandler());
@@ -35,6 +37,7 @@ builder.Services.AddScoped<ILoginService,LoginService>();
 builder.Services.AddScoped<IPermissonUserService,PermissonUserService>();
 builder.Services.AddScoped<IActionService,ActionService>();
 builder.Services.AddScoped<IProductService,ProductService>();
+builder.Services.AddScoped<IUploadImageService,UploadImageService>();
 
 // Add Authorization
 builder.Services.AddAuthorization();
@@ -93,6 +96,7 @@ builder.Services.AddSwaggerGen(c =>
             Array.Empty<string>()
         }
     });
+    c.OperationFilter<FileUploadOperationFilter>();
 
 });
 
@@ -108,6 +112,7 @@ var app = builder.Build();
 
 // Enable middleware
 app.UseDeveloperExceptionPage();
+app.UseStaticFiles();
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {

@@ -1,4 +1,6 @@
-﻿namespace DemoApi.Models.Domain.Product
+﻿using DemoApi.Models.Dtos.PageDtos;
+
+namespace DemoApi.Models.Domain.Product
 {
     public class Products
     {
@@ -59,6 +61,10 @@
             get; set;
         }
         public int DeletedFlag
+        {
+            get; set;
+        }
+        public List<Json> ImageUrl
         {
             get; set;
         }
