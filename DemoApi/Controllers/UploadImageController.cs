@@ -44,5 +44,33 @@ namespace DemoApi.Controllers
                 });
             }
         }
+
+        [HttpPost("delete-image")]
+        [CustomAuthorize]
+        public IActionResult DeleteImage([FromBody] string imagePath)
+        {
+            if (string.IsNullOrEmpty(imagePath))
+            {
+                return BadRequest(new
+                {
+                    message = "Image path is required."
+                });
+            }
+
+            var result = _uploadImageService.DeleteImage(imagePath);
+
+            if (result)
+            {
+                return Ok(new
+                {
+                    message = "Image deleted successfully."
+                });
+            }
+
+            return NotFound(new
+            {
+                message = "Image not found."
+            });
+        }
     }
 }

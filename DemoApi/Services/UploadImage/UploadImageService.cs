@@ -59,5 +59,27 @@ namespace DemoApi.Services.UploadImage
 
             return imageUrl;
         }
+        public bool DeleteImage(string imagePath)
+        {
+            if (string.IsNullOrEmpty(imagePath))
+            {
+                throw new ArgumentException("Image path cannot be null or empty.");
+            }
+
+            if (imagePath.StartsWith("/"))
+            {
+                imagePath = imagePath.Substring(1);
+            }
+
+            var fullPath = Path.Combine(_env.WebRootPath,imagePath);
+
+            if (File.Exists(fullPath))
+            {
+                File.Delete(fullPath);
+                return true; 
+            }
+
+            return false; 
+        }
     }
 }
