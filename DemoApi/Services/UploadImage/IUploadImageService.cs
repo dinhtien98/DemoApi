@@ -7,6 +7,7 @@ namespace DemoApi.Services.UploadImage
     public interface IUploadImageService
     {
         Task<List<object>> UploadImagesAsync(List<IFormFile> files);
-        bool DeleteImage(string imagePath);
+        public Task<bool> DeleteImageAsync(string imagePath, int id);
+        public Task<int> GetIdImageAsync(string imagePath);
     }
 }

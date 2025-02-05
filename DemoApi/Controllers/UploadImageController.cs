@@ -47,7 +47,7 @@ namespace DemoApi.Controllers
 
         [HttpPost("delete-image")]
         [CustomAuthorize]
-        public IActionResult DeleteImage([FromBody] string imagePath)
+        public async Task<IActionResult> DeleteImageAsync([FromBody] string imagePath)
         {
             if (string.IsNullOrEmpty(imagePath))
             {
@@ -56,8 +56,8 @@ namespace DemoApi.Controllers
                     message = "Image path is required."
                 });
             }
-
-            var result = _uploadImageService.DeleteImage(imagePath);
+            var id = await _uploadImageService.GetIdImageAsync(imagePath);
+            var result = await _uploadImageService.DeleteImageAsync(imagePath,id);
 
             if (result)
             {
@@ -71,6 +71,25 @@ namespace DemoApi.Controllers
             {
                 message = "Image not found."
             });
+        }
+
+        [HttpGet]
+        [CustomAuthorize]
+        public async Task<IActionResult> GetUserById(string imageUrl)
+        {
+            try
+            {
+                var res = await _uploadImageService.GetIdImageAsync(imageUrl);
+                if (res == null)
+                {
+                    return NotFound();
+                }
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500,ex.Message);
+            }
         }
     }
 }
