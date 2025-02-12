@@ -106,8 +106,21 @@ namespace DemoApi.Controllers
                 var user = await _userService.GetUserByIdAsync(id);
                 if (user == null)
                     return NotFound();
-                await _userService.UpdateUserAsync(id,userDto,updatedById);
-                return Ok("update successfully");
+                var isSuccess = await _userService.UpdateUserAsync(id,userDto,updatedById);
+                if (isSuccess)
+                {
+                    return Ok(new
+                    {
+                        message = "Update successfully"
+                    });
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        error = "Failed to Update user"
+                    });
+                }
             }
             catch (Exception ex)
             {
