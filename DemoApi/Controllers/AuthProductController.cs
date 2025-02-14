@@ -65,7 +65,20 @@ namespace DemoApi.Controllers
                     });
                 }
                 var res = await _productService.AddProductAsync(productDtos, createdById);
-                return Ok("Add successfully");
+                if (res)
+                {
+                    return Ok(new
+                    {
+                        message = "Product added successfully"
+                    });
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        error = "Failed to add Product"
+                    });
+                }
             }
             catch (Exception ex)
             {

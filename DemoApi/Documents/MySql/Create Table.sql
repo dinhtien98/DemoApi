@@ -8,12 +8,12 @@ CREATE TABLE `AUTH_USER` (
   `FULLNAME` varchar(100) DEFAULT NULL,
   `EMAIL` varchar(100) DEFAULT NULL,
   `FIRSTLOGIN` int DEFAULT NULL COMMENT '0: not yet login\\n1: logined',
-  `INDATE` varchar(8) DEFAULT NULL,
-  `OUTDATE` varchar(8) DEFAULT NULL,
+  `INDATE` varchar(20) DEFAULT NULL,
+  `OUTDATE` varchar(20) DEFAULT NULL,
   `FAILCOUNT` int DEFAULT NULL COMMENT 'count times loging fail, if loging fail 5 time lock account',
   `ISLOCKED` int NOT NULL DEFAULT '0' COMMENT '0: no lock, 1: locked',
   `AVATAR` varchar(500) DEFAULT NULL COMMENT 'link avata image',
-  `LASTLOGIN` datetime DEFAULT NULL,
+  `LASTLOGIN` varchar(20) DEFAULT NULL,
   `CREATEDTIME` datetime DEFAULT NULL,
   `CREATEDBY` varchar(20) DEFAULT NULL,
   `UPDATEDTIME` datetime DEFAULT NULL,
@@ -176,6 +176,7 @@ CREATE TABLE `AUTH_PRODUCT` (
     `STOCKQUANTITY` INT NOT NULL DEFAULT '0',
     `CATEGORY` INT NOT NULL,
     `SUPPLIER` VARCHAR(50),
+    `DISCOUNT` DECIMAL(10,2) NOT NULL DEFAULT '0',
     `CREATEDTIME` DATETIME DEFAULT NULL,
     `CREATEDBY` VARCHAR(10) DEFAULT NULL,
     `UPDATEDTIME` DATETIME DEFAULT NULL,
@@ -271,7 +272,7 @@ END //
 DELIMITER ;
 
 DELIMITER //
-CREATE PROCEDURE sp_auth_user_deleteByID(IN p_ID INT, IN p_DeletedBy VARCHAR(20))
+CREATE PROCEDURE sp_auth_user_delete(IN p_ID INT, IN p_DeletedBy VARCHAR(20))
 BEGIN
     -- Xóa mềm trong bảng AUTH_USER
     UPDATE AUTH_USER
@@ -292,5 +293,644 @@ BEGIN
 END //
 DELIMITER ;
 
+DELIMITER //
+CREATE PROCEDURE sp_auth_user_login_select(IN P_UserName VARCHAR(50))
+BEGIN
+    SELECT 
+        u.ID,
+        u.UserName,
+        u.Password,
+        u.FullName,
+        u.Email,
+        u.Avatar,
+        u.IsLocked,
+        u.FailCount,
+        u.LastLogin,
+        u.CreatedTime,
+        u.CreatedBy,
+        u.UpdatedTime,
+        u.UpdatedBy,
+        u.DeletedFlag,
+        (SELECT JSON_ARRAYAGG(JSON_OBJECT('code', r.ROLECODE)) 
+             FROM AUTH_USER_ROLE r
+             WHERE r.USERID = u.ID AND r.DELETEDFLAG = 0) AS RoleCode
+    FROM AUTH_USER u
+    WHERE u.UserName = P_UserName 
+    AND u.DeletedFlag = 0;
+END //
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE sp_auth_user_login_failcount_update(
+    IN p_ID INT
+)
+BEGIN
+    -- Tăng số lần đăng nhập thất bại và khóa tài khoản nếu quá 5 lần
+    UPDATE AUTH_USER
+    SET 
+        FAILCOUNT = FAILCOUNT + 1,
+        ISLOCKED = CASE WHEN FAILCOUNT + 1 >= 5 THEN 1 ELSE ISLOCKED END
+    WHERE ID = p_ID AND ISLOCKED = 0;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE sp_auth_user_login_failcount_reset(
+    IN p_ID INT
+)
+BEGIN
+    -- Reset số lần đăng nhập thất bại và mở khóa tài khoản
+    UPDATE AUTH_USER
+    SET 
+        FAILCOUNT = 0,
+        ISLOCKED = 0
+    WHERE ID = p_ID;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE sp_auth_user_update(
+    IN p_id INT,
+    IN p_FullName VARCHAR(255),
+    IN p_Email VARCHAR(255),
+    IN p_FirstLogin DATETIME,
+    IN p_LastLogin DATETIME,
+    IN p_IsLocked INT,
+    IN p_InDate DATETIME,
+    IN p_OutDate DATETIME,
+    IN p_Avatar VARCHAR(500),
+    IN p_UpdatedBy INT,
+    IN p_RoleCode JSON
+)
+BEGIN
+    -- Cập nhật thông tin user trong AUTH_USER
+    UPDATE AUTH_USER
+    SET 
+        FullName = p_FullName,
+        Email = p_Email,
+        FirstLogin = p_FirstLogin,
+        LastLogin = p_LastLogin,
+        IsLocked = p_IsLocked,
+        InDate = p_InDate,
+        OutDate = p_OutDate,
+        Avatar = p_Avatar,
+        UpdatedBy = p_UpdatedBy,
+        UpdatedTime = NOW()
+    WHERE ID = p_id;
+
+    -- Xóa hết vai trò của user trong AUTH_USER_ROLE
+    DELETE FROM AUTH_USER_ROLE WHERE UserID = p_id;
+
+    -- Thêm lại danh sách role mới từ JSON
+    INSERT INTO AUTH_USER_ROLE (USERID, ROLECODE, CREATEDTIME, CREATEDBY)
+    SELECT p_id, JSON_UNQUOTE(JSON_EXTRACT(Item, '$.Code')) AS ROLECODE, NOW(), p_UpdatedBy
+    FROM JSON_TABLE(p_RoleCode, '$[*]' COLUMNS (Item JSON PATH '$')) AS Item;
+
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE sp_auth_role_insert(
+    IN p_Code VARCHAR(50),
+    IN p_Name VARCHAR(100),
+    IN p_CreatedBy VARCHAR(16),
+    IN p_PageCode JSON,
+    IN p_ActionCode JSON
+)
+BEGIN
+    DECLARE v_RoleID INT;
+
+    -- Thêm mới role vào bảng AUTH_ROLE
+    INSERT INTO AUTH_ROLE (CODE, NAME, CREATEDTIME, CREATEDBY)
+    VALUES (p_Code, p_Name, NOW(), p_CreatedBy);
+
+    -- Lấy ID của role vừa thêm
+    SET v_RoleID = LAST_INSERT_ID();
+
+    -- Chèn dữ liệu vào bảng AUTH_PAGE_ACTION_ROLE bằng cách kết hợp PAGECODE và ACTIONCODE
+    INSERT INTO AUTH_PAGE_ACTION_ROLE (PAGECODE, ACTIONCODE, ROLECODE, CREATEDTIME, CREATEDBY)
+    SELECT 
+        JSON_UNQUOTE(JSON_EXTRACT(pc.Item, '$.Code')) AS PAGECODE,
+        JSON_UNQUOTE(JSON_EXTRACT(ac.Item, '$.Code')) AS ACTIONCODE,
+        p_Code, 
+        NOW(),
+        p_CreatedBy
+    FROM 
+        JSON_TABLE(p_PageCode, '$[*]' COLUMNS (Item JSON PATH '$')) AS pc
+    CROSS JOIN 
+        JSON_TABLE(p_ActionCode, '$[*]' COLUMNS (Item JSON PATH '$')) AS ac;
+
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE sp_auth_role_selectAll()
+BEGIN
+    SELECT 
+        r.*, 
+        COALESCE(
+            CONCAT('[', GROUP_CONCAT(DISTINCT JSON_OBJECT('code', p.PAGECODE)), ']'), 
+            '[]'
+        ) AS pageCode,
+        COALESCE(
+            CONCAT('[', GROUP_CONCAT(DISTINCT JSON_OBJECT('code', p.ACTIONCODE)), ']'), 
+            '[]'
+        ) AS actionCode
+    FROM AUTH_ROLE r
+    LEFT JOIN AUTH_PAGE_ACTION_ROLE p ON r.CODE = p.ROLECODE
+    WHERE r.DELETEDFLAG = 0
+    GROUP BY r.ID;
+    
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE sp_auth_role_selectByID(IN p_ID INT)
+BEGIN
+    SELECT 
+        r.*, 
+        COALESCE(
+            CONCAT('[', GROUP_CONCAT(DISTINCT JSON_OBJECT('code', p.PAGECODE)), ']'), 
+            '[]'
+        ) AS pageCode,
+        COALESCE(
+            CONCAT('[', GROUP_CONCAT(DISTINCT JSON_OBJECT('code', p.ACTIONCODE)), ']'), 
+            '[]'
+        ) AS actionCode
+    FROM AUTH_ROLE r
+    LEFT JOIN AUTH_PAGE_ACTION_ROLE p ON r.CODE = p.ROLECODE
+    WHERE r.DELETEDFLAG = 0 AND r.ID = p_ID
+    GROUP BY r.ID;
+    
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE sp_auth_role_delete(
+    IN p_ID INT,
+    IN p_DeletedBy VARCHAR(16)
+)
+BEGIN
+    DECLARE v_RoleCode VARCHAR(50);
+
+    -- Lấy ROLECODE của role cần xóa
+    SELECT CODE INTO v_RoleCode FROM AUTH_ROLE WHERE ID = p_ID;
+
+    -- Nếu role không tồn tại thì thoát
+    IF v_RoleCode IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Role not found';
+    END IF;
+
+    -- Xóa mềm tất cả các quyền liên quan đến role trong AUTH_PAGE_ACTION_ROLE
+    UPDATE AUTH_PAGE_ACTION_ROLE 
+    SET 
+        DELETEDFLAG = 1,
+        DELETEDBY = p_DeletedBy,
+        DELETEDTIME = NOW()
+    WHERE ROLECODE = v_RoleCode;
+
+    -- Xóa mềm role trong AUTH_ROLE
+    UPDATE AUTH_ROLE
+    SET 
+        DELETEDFLAG = 1,
+        DELETEDBY = p_DeletedBy,
+        DELETEDTIME = NOW()
+    WHERE ID = p_ID;
+    
+END $$
+DELIMITER ;
 
 
+DELIMITER $$
+CREATE PROCEDURE sp_auth_role_update(
+    IN p_ID INT,
+    IN p_Code VARCHAR(50),
+    IN p_Name VARCHAR(100),
+    IN p_UpdatedBy VARCHAR(16),
+    IN p_PageCode JSON,
+    IN p_ActionCode JSON
+)
+BEGIN
+    DECLARE v_RoleCode VARCHAR(50);
+
+    -- Kiểm tra role có tồn tại hay không
+    SELECT CODE INTO v_RoleCode FROM AUTH_ROLE WHERE ID = p_ID;
+
+    IF v_RoleCode IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Role not found';
+    END IF;
+
+    -- Cập nhật thông tin role trong AUTH_ROLE
+    UPDATE AUTH_ROLE
+    SET 
+        CODE = p_Code,
+        NAME = p_Name,
+        UPDATEDBY = p_UpdatedBy,
+        UPDATEDTIME = NOW()
+    WHERE ID = p_ID;
+
+     -- Xóa tất cả các quyền liên quan đến role trong AUTH_PAGE_ACTION_ROLE
+    DELETE FROM AUTH_PAGE_ACTION_ROLE WHERE ROLECODE = v_RoleCode;
+
+    -- Thêm lại danh sách pageCode và actionCode mới từ JSON vào AUTH_PAGE_ACTION_ROLE
+    INSERT INTO AUTH_PAGE_ACTION_ROLE (PAGECODE, ACTIONCODE, ROLECODE, CREATEDTIME, CREATEDBY)
+    SELECT 
+        JSON_UNQUOTE(JSON_EXTRACT(p.PageItem, '$.Code')) AS PAGECODE,
+        JSON_UNQUOTE(JSON_EXTRACT(a.ActionItem, '$.Code')) AS ACTIONCODE,
+        p_Code,
+        NOW(),
+        p_UpdatedBy
+    FROM JSON_TABLE(p_PageCode, '$[*]' COLUMNS (PageItem JSON PATH '$')) AS p
+    JOIN JSON_TABLE(p_ActionCode, '$[*]' COLUMNS (ActionItem JSON PATH '$')) AS a;
+
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE sp_auth_action_insert(
+    IN p_Name VARCHAR(100),
+    IN p_ActionCode VARCHAR(10),
+    IN p_CreatedBy VARCHAR(16)
+)
+BEGIN
+    INSERT INTO AUTH_ACTION (NAME, ACTIONCODE, CREATEDTIME, CREATEDBY)
+    VALUES (p_Name, p_ActionCode, NOW(), p_CreatedBy);
+END $$
+DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE sp_auth_action_delete(
+    IN p_ID INT,
+    IN p_DeletedBy VARCHAR(16)
+)
+BEGIN
+    UPDATE AUTH_ACTION 
+    SET 
+        DELETEDFLAG = 1,
+        DELETEDBY = p_DeletedBy,
+        DELETEDTIME = NOW()
+    WHERE ID = p_ID;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE sp_auth_action_selectByID(
+    IN p_ID INT
+)
+BEGIN
+    SELECT * FROM AUTH_ACTION WHERE ID = p_ID AND DELETEDFLAG = 0;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE sp_auth_action_selectAll()
+BEGIN
+    SELECT * FROM AUTH_ACTION WHERE DELETEDFLAG = 0;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE sp_auth_action_update(
+    IN p_ID INT,
+    IN p_Name VARCHAR(100),
+    IN p_ActionCode VARCHAR(10),
+    IN p_UpdatedBy VARCHAR(16)
+)
+BEGIN
+    UPDATE AUTH_ACTION
+    SET 
+        NAME = p_Name,
+        ACTIONCODE = p_ActionCode,
+        UPDATEDBY = p_UpdatedBy,
+        UPDATEDTIME = NOW()
+    WHERE ID = p_ID;
+END $$
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE sp_auth_page_insert(
+    IN p_Code VARCHAR(10),
+    IN p_Name VARCHAR(100),
+    IN p_ParentCode VARCHAR(10),
+    IN p_Level INT,
+    IN p_Url VARCHAR(500),
+    IN p_Hidden INT,
+    IN p_Icon VARCHAR(50),
+    IN p_Sort INT,
+    IN p_CreatedBy VARCHAR(16),
+    IN p_ActionCode JSON
+)
+BEGIN
+    -- Thêm page vào bảng AUTH_PAGE
+    INSERT INTO AUTH_PAGE (
+        CODE, NAME, PARENTCODE, LEVEL, URL, HIDDEN, ICON, SORT, CREATEDTIME, CREATEDBY
+    ) VALUES (
+        p_Code, p_Name, p_ParentCode, p_Level, p_Url, p_Hidden, p_Icon, p_Sort, NOW(), p_CreatedBy
+    );
+
+    -- Chèn danh sách action vào bảng AUTH_PAGE_ACTION từ JSON
+    INSERT INTO AUTH_PAGE_ACTION (PAGECODE, ACTIONCODE, CREATEDTIME, CREATEDBY)
+    SELECT p_Code, JSON_UNQUOTE(JSON_EXTRACT(Item, '$.Code')) AS ACTIONCODE, NOW(), p_CreatedBy
+    FROM JSON_TABLE(p_ActionCode, '$[*]' COLUMNS (Item JSON PATH '$')) AS Item;
+
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE sp_auth_page_delete(
+    IN p_Id INT,
+    IN p_DeletedBy VARCHAR(16)
+)
+BEGIN
+    -- Xóa mềm các hành động liên quan trong AUTH_PAGE_ACTION
+    UPDATE AUTH_PAGE_ACTION 
+    SET DELETEDFLAG = 1, DELETEDBY = p_DeletedBy, DELETEDTIME = NOW()
+    WHERE PAGECODE = (SELECT CODE FROM AUTH_PAGE WHERE ID = p_Id);
+    
+    -- Xóa mềm page trong AUTH_PAGE
+    UPDATE AUTH_PAGE 
+    SET DELETEDFLAG = 1, DELETEDBY = p_DeletedBy, DELETEDTIME = NOW()
+    WHERE ID = p_Id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE sp_auth_page_selectAll()
+BEGIN
+    SELECT 
+        p.ID,
+        P.CODE,
+        p.NAME,
+        p.PARENTCODE,
+        p.LEVEL,
+        p.URL,
+        p.HIDDEN,
+        p.ICON,
+        p.SORT,
+        p.CREATEDTIME,
+        p.CREATEDBY,
+        p.UPDATEDTIME,
+        p.UPDATEDBY,
+        p.DELETEDTIME,
+        p.DELETEDBY,
+        p.DELETEDFLAG,
+        COALESCE(
+            CONCAT('[', GROUP_CONCAT(
+                JSON_OBJECT('Code', a.ACTIONCODE)
+            ), ']'), 
+            '[]'
+        ) AS actionCode
+    FROM AUTH_PAGE p
+    LEFT JOIN AUTH_PAGE_ACTION a ON p.CODE = a.PAGECODE
+    WHERE p.DELETEDFLAG = 0
+    GROUP BY p.ID,
+        P.CODE,
+        p.NAME,
+        p.PARENTCODE,
+        p.LEVEL,
+        p.URL,
+        p.HIDDEN,
+        p.ICON,
+        p.SORT,
+        p.CREATEDTIME,
+        p.CREATEDBY,
+        p.UPDATEDTIME,
+        p.UPDATEDBY,
+        p.DELETEDTIME,
+        p.DELETEDBY,
+        p.DELETEDFLAG;
+END //
+
+DELIMITER //
+CREATE PROCEDURE sp_auth_page_selectByID(
+    IN p_ID VARCHAR(10)
+)
+BEGIN
+    SELECT 
+        p.ID,
+        P.CODE,
+        p.NAME,
+        p.PARENTCODE,
+        p.LEVEL,
+        p.URL,
+        p.HIDDEN,
+        p.ICON,
+        p.SORT,
+        p.CREATEDTIME,
+        p.CREATEDBY,
+        p.UPDATEDTIME,
+        p.UPDATEDBY,
+        p.DELETEDTIME,
+        p.DELETEDBY,
+        p.DELETEDFLAG, 
+        COALESCE(
+            CONCAT('[', GROUP_CONCAT(
+                JSON_OBJECT('Code', a.ACTIONCODE)
+            ), ']'), 
+            '[]'
+        ) AS actionCode
+    FROM AUTH_PAGE p
+    LEFT JOIN AUTH_PAGE_ACTION a ON p.CODE = a.PAGECODE
+    WHERE p.ID = p_ID AND p.DELETEDFLAG = 0
+    GROUP BY p.ID,
+        P.CODE,
+        p.NAME,
+        p.PARENTCODE,
+        p.LEVEL,
+        p.URL,
+        p.HIDDEN,
+        p.ICON,
+        p.SORT,
+        p.CREATEDTIME,
+        p.CREATEDBY,
+        p.UPDATEDTIME,
+        p.UPDATEDBY,
+        p.DELETEDTIME,
+        p.DELETEDBY,
+        p.DELETEDFLAG;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE sp_auth_page_update(
+    IN p_Id INT,
+    IN p_Code VARCHAR(10),
+    IN p_Name VARCHAR(100),
+    IN p_ParentCode VARCHAR(10),
+    IN p_Level INT,
+    IN p_Url VARCHAR(500),
+    IN p_Hidden INT,
+    IN p_Icon VARCHAR(50),
+    IN p_Sort INT,
+    IN p_UpdatedBy VARCHAR(16),
+    IN p_ActionCode JSON
+)
+BEGIN
+    -- Cập nhật thông tin trang trong AUTH_PAGE
+    UPDATE AUTH_PAGE 
+    SET CODE = p_Code,
+        NAME = p_Name,
+        PARENTCODE = p_ParentCode,
+        LEVEL = p_Level,
+        URL = p_Url,
+        HIDDEN = p_Hidden,
+        ICON = p_Icon,
+        SORT = p_Sort,
+        UPDATEDTIME = NOW(),
+        UPDATEDBY = p_UpdatedBy
+    WHERE ID = p_Id;
+    
+    -- Xóa cứng tất cả action liên quan đến trang
+    DELETE FROM AUTH_PAGE_ACTION WHERE PAGECODE = (SELECT CODE FROM AUTH_PAGE WHERE ID = p_Id);
+    
+    -- Thêm mới danh sách action vào AUTH_PAGE_ACTION từ JSON
+    INSERT INTO AUTH_PAGE_ACTION (PAGECODE, ACTIONCODE, CREATEDTIME, CREATEDBY)
+    SELECT p_Code, JSON_UNQUOTE(JSON_EXTRACT(Item, '$.Code')) AS ACTIONCODE, NOW(), p_UpdatedBy
+    FROM JSON_TABLE(p_ActionCode, '$[*]' COLUMNS (Item JSON PATH '$')) AS Item;
+    
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE sp_auth_page_get_permisson_user(
+    IN p_ID INT
+)
+BEGIN
+    SELECT DISTINCT
+        p.*
+    FROM AUTH_USER u
+    JOIN AUTH_USER_ROLE ur ON u.ID = ur.USERID
+    JOIN AUTH_ROLE r ON ur.ROLECODE = r.CODE
+    JOIN AUTH_PAGE_ACTION_ROLE par ON r.CODE = par.ROLECODE
+    JOIN AUTH_PAGE p ON par.PAGECODE = p.CODE
+    WHERE u.ID = p_ID AND u.DELETEDFLAG = 0 AND r.DELETEDFLAG = 0 AND p.DELETEDFLAG = 0;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE sp_product_insert(
+    IN p_productName VARCHAR(255),
+    IN p_description VARCHAR(500),
+    IN p_price DECIMAL(10,2),
+    IN p_stockQuantity INT,
+    IN p_category VARCHAR(100),
+    IN p_supplier VARCHAR(100),
+    IN p_discount DECIMAL(5,2),
+    IN p_createdBy INT,
+    IN p_imageUrl JSON
+)
+BEGIN
+    DECLARE new_product_id INT;
+    
+    -- Thêm sản phẩm vào bảng AUTH_PRODUCT
+    INSERT INTO AUTH_PRODUCT (
+        PRODUCTNAME, DESCRIPTION, PRICE, STOCKQUANTITY, CATEGORY, SUPPLIER, DISCOUNT, CREATEDTIME, CREATEDBY
+    ) VALUES (
+        p_productName, p_description, p_price, p_stockQuantity, p_category, p_supplier, p_discount, NOW(), p_createdBy
+    );
+    
+    -- Lấy ID của sản phẩm vừa thêm
+    SET new_product_id = LAST_INSERT_ID();
+    
+    -- Chèn danh sách hình ảnh vào bảng AUTH_PRODUCT_IMAGE từ JSON
+    INSERT INTO AUTH_PRODUCT_IMAGE (IDPRODUCT, IMAGEURL, CREATEDTIME, CREATEDBY)
+    SELECT new_product_id, JSON_UNQUOTE(JSON_EXTRACT(Item, '$.Code')), NOW(), p_createdBy
+    FROM JSON_TABLE(p_imageUrl, '$[*]' COLUMNS (Item JSON PATH '$')) AS Item;
+
+END //
+
+DELIMITER //
+CREATE PROCEDURE sp_product_delete(
+    IN p_ID INT,
+    IN p_DeletedBy INT
+)
+BEGIN
+    -- Xóa mềm các hình ảnh liên quan trong AUTH_PRODUCT_IMAGE
+    UPDATE AUTH_PRODUCT_IMAGE 
+    SET DELETEDFLAG = 1, DELETEDBY = p_DeletedBy, DELETEDTIME = NOW()
+    WHERE IDPRODUCT = p_ID;
+    
+    -- Xóa mềm sản phẩm trong AUTH_PRODUCT
+    UPDATE AUTH_PRODUCT 
+    SET DELETEDFLAG = 1, DELETEDBY = p_DeletedBy, DELETEDTIME = NOW()
+    WHERE ID = p_ID;
+END //
+
+DELIMITER //
+CREATE PROCEDURE sp_product_selectAll()
+BEGIN
+    SELECT 
+        p.*, 
+        COALESCE(
+            CONCAT('[', GROUP_CONCAT(
+                JSON_OBJECT('Code', i.IMAGEURL)
+            ), ']'), 
+            '[]'
+        ) AS imageUrl
+    FROM AUTH_PRODUCT p
+    LEFT JOIN AUTH_PRODUCT_IMAGE i ON p.ID = i.IDPRODUCT
+    WHERE p.DELETEDFLAG = 0
+    GROUP BY p.ID;
+END //
+
+DELIMITER //
+CREATE PROCEDURE sp_product_selectByID(
+    IN p_ID INT
+)
+BEGIN
+    SELECT 
+        p.*, 
+        COALESCE(
+            CONCAT('[', GROUP_CONCAT(
+                JSON_OBJECT('Code', i.IMAGEURL)
+            ), ']'), 
+            '[]'
+        ) AS imageUrl
+    FROM AUTH_PRODUCT p
+    LEFT JOIN AUTH_PRODUCT_IMAGE i ON p.ID = i.IDPRODUCT
+    WHERE p.ID = p_ID AND p.DELETEDFLAG = 0
+    GROUP BY p.ID;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE sp_product_update(
+    IN p_id INT,
+    IN p_productName VARCHAR(255),
+    IN p_description VARCHAR(500),
+    IN p_price DECIMAL(10,2),
+    IN p_stockQuantity INT,
+    IN p_category VARCHAR(100),
+    IN p_supplier VARCHAR(100),
+    IN p_discount DECIMAL(5,2),
+    IN p_updatedBy INT,
+    IN p_imageUrl JSON
+)
+BEGIN
+    -- Cập nhật thông tin sản phẩm trong AUTH_PRODUCT
+    UPDATE AUTH_PRODUCT
+    SET PRODUCTNAME = p_productName,
+        DESCRIPTION = p_description,
+        PRICE = p_price,
+        STOCKQUANTITY = p_stockQuantity,
+        CATEGORY = p_category,
+        SUPPLIER = p_supplier,
+        DISCOUNT = p_discount,
+        UPDATEDTIME = NOW(),
+        UPDATEDBY = p_updatedBy
+    WHERE ID = p_id;
+    
+    -- Xóa cứng các hình ảnh liên quan đến sản phẩm trong AUTH_PRODUCT_IMAGE
+    DELETE FROM AUTH_PRODUCT_IMAGE WHERE IDPRODUCT = p_id;
+    
+    -- Chèn lại danh sách hình ảnh từ JSON
+    INSERT INTO AUTH_PRODUCT_IMAGE (IDPRODUCT, IMAGEURL, CREATEDTIME, CREATEDBY)
+    SELECT p_id, JSON_UNQUOTE(JSON_EXTRACT(Item, '$.Code')), NOW(), p_updatedBy
+    FROM JSON_TABLE(p_imageUrl, '$[*]' COLUMNS (Item JSON PATH '$')) AS Item;
+
+END //
+DELIMITER ;
