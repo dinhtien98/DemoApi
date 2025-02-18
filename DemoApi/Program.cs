@@ -20,6 +20,7 @@ SqlMapper.AddTypeHandler(new JsonTypeHandler());
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // Add services to the container.
 builder.Services.AddControllers();
 
@@ -103,7 +104,8 @@ builder.Services.AddSwaggerGen(c =>
 var allowedOrigins = new string[] {
     "http://localhost:3000",
     "http://localhost:4200",
-    "http://localhost:7223"
+    "http://localhost:7223",
+    "http://localhost:5004"
 };
 
 

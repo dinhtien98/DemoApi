@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  demo_next_js:
+    container_name: DEMO_NEXT_JS
+    build:
+      context: ./demo_next_js
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    volumes:
+      - ./demo_next_js/.env:/app/.env  
+      - ./demo_next_js:/app
+    command: "npm run dev"
+    depends_on:
+      - mysql
+
+  demoapi:
+    build:
+      context: .
+      dockerfile: DemoApi/Dockerfile
+    image: demoapi
+    container_name: demoapi_container
+    ports:
+      - "5004:5004"  
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development  
+      - DOTNET_USE_POLLING_FILE_WATCHER=1  
+    depends_on:
+      - mysql
+    volumes:
+      - ./DemoApi:/app 
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: demo
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-scripts:/docker-entrypoint-initdb.d
+
+volumes:
+  mysql_data:
